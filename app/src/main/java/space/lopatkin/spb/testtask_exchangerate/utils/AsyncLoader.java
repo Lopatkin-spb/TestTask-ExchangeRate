@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class AsyncLoader extends AsyncTaskLoader<List<Valute>> {
-    private Client client = new Client();
+    private Network network = new Network();
     private List<Valute> mData;
     private String mUrl = new String();
 
@@ -29,7 +29,7 @@ public class AsyncLoader extends AsyncTaskLoader<List<Valute>> {
     public List<Valute> loadInBackground() {
         List<Valute> data = null;
         try {
-            data = client.getData(mUrl);
+            data = network.getExchangeRates(mUrl);
         } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();
         }

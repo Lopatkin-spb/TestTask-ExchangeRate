@@ -3,6 +3,8 @@
     <string name="dialog_no_internet">Подключение к интернету отсутствует!</string>
     <string name="dialog_button_retry">Повторить</string>
     <string name="toast_error_loading">Ошибка загрузки.</string>
-    <string name="text_view_title">Курс валюты ЦБРФ от </string>
+    <string name="text_view_title">Курс валюты ЦБРФ от</string>
     <string name="text_button_refresh">Обновить</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
