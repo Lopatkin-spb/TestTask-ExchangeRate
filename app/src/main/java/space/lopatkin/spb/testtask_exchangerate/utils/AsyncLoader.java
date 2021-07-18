@@ -10,6 +10,7 @@ import space.lopatkin.spb.testtask_exchangerate.MainActivity;
 import space.lopatkin.spb.testtask_exchangerate.model.Valute;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AsyncLoader extends AsyncTaskLoader<List<Valute>> {
@@ -33,6 +34,10 @@ public class AsyncLoader extends AsyncTaskLoader<List<Valute>> {
         } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();
         }
+
+        if (data == null) {
+            data = new ArrayList<>();
+        }
         return data;
     }
 
@@ -40,14 +45,14 @@ public class AsyncLoader extends AsyncTaskLoader<List<Valute>> {
     public void deliverResult(@Nullable List<Valute> data) {
 
         if (isReset()) {
-
             if (data != null) {
                 onReleaseResources(data);
             }
         }
         List<Valute> oldData = mData;
         mData = data;
-        if (isStarted() || data == null) {
+
+        if (isStarted()) {
             super.deliverResult(data);
         }
         if (oldData != null) {
@@ -57,7 +62,6 @@ public class AsyncLoader extends AsyncTaskLoader<List<Valute>> {
 
     @Override
     protected void onStartLoading() {
-
         if (mData != null) {
             deliverResult(mData);
         }

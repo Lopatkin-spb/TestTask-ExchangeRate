@@ -1,7 +1,9 @@
 package space.lopatkin.spb.testtask_exchangerate.utils;
 
 import android.net.Uri;
+import android.util.Log;
 import org.xmlpull.v1.XmlPullParserException;
+import space.lopatkin.spb.testtask_exchangerate.MainActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,13 +34,14 @@ public class Network {
             listExchangeRates = xmlParser.parse(stream);
 
         } catch (IOException ioe) {
-            listExchangeRates = null;
-//            Log.d(MainActivity.TAG, "ошибка загрузки данных", ioe);
+            Log.d(MainActivity.TAG, "--------------ошибка загрузки данных", ioe);
         } finally {
             if (stream != null) {
                 stream.close();
             }
         }
-        return listExchangeRates;
+        return listExchangeRates == null ? new ArrayList() : listExchangeRates;
     }
+
+
 }

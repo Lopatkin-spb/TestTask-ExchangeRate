@@ -41,20 +41,16 @@ public class XmlParser {
     //отбор нужных главных тегов
     private List readFeed(XmlPullParser parser)
             throws XmlPullParserException, IOException {
-
         List entries = new ArrayList();
-
         parser.require(XmlPullParser.START_TAG, nameSpaces, TAG_VALCURS);
-
         String dateVal = getDateVal(parser);
-
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
             String name = parser.getName();
             if (name.equals(TAG_VALUTE)) {
-                entries.add(readEntry(parser,dateVal));
+                entries.add(readEntry(parser, dateVal));
             } else {
                 skip(parser);
             }
@@ -62,12 +58,10 @@ public class XmlParser {
         return entries;
     }
 
-
     private String getDateVal(XmlPullParser parser)
             throws XmlPullParserException, IOException {
-
         String tag = parser.getName();
-        String date=null;
+        String date = null;
         if (tag.equals(TAG_VALCURS)) {
             date = parser.getAttributeValue(nameSpaces, TAG_DATE);
         } else {
@@ -76,20 +70,15 @@ public class XmlParser {
         return date;
     }
 
-
-    private Valute readEntry(XmlPullParser parser,String date)
+    private Valute readEntry(XmlPullParser parser, String date)
             throws XmlPullParserException, IOException {
-
         parser.require(XmlPullParser.START_TAG, nameSpaces, TAG_VALUTE);
-
         String numcodeVal = null;
         String charcodeVal = null;
         String nominalVal = null;
         String nameVal = null;
         String valueVal = null;
         String dateVal = date;
-
-
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -97,15 +86,15 @@ public class XmlParser {
             String name = parser.getName();
 
             if (name.equals(TAG_NUMCODE)) {
-                numcodeVal = readNumcodeVal(parser);
+                numcodeVal = readVal(parser, TAG_NUMCODE);
             } else if (name.equals(TAG_CHARCODE)) {
-                charcodeVal = readCharcodeVal(parser);
+                charcodeVal = readVal(parser, TAG_CHARCODE);
             } else if (name.equals(TAG_NOMINAL)) {
-                nominalVal = readNominalVal(parser);
+                nominalVal = readVal(parser, TAG_NOMINAL);
             } else if (name.equals(TAG_NAME)) {
-                nameVal = readNameVal(parser);
+                nameVal = readVal(parser, TAG_NAME);
             } else if (name.equals(TAG_VALUE)) {
-                valueVal = readValueVal(parser);
+                valueVal = readVal(parser, TAG_VALUE);
             } else {
                 skip(parser);
             }
@@ -113,58 +102,12 @@ public class XmlParser {
         return new Valute(numcodeVal, charcodeVal, nominalVal, nameVal, valueVal, dateVal);
     }
 
-    private String readNumcodeVal(XmlPullParser parser)
+    private String readVal(XmlPullParser parser, String TAG)
             throws XmlPullParserException, IOException {
-
-        parser.require(XmlPullParser.START_TAG, nameSpaces, TAG_NUMCODE);
-        String numcodeVal = readResult(parser);
-        parser.require(XmlPullParser.END_TAG, nameSpaces, TAG_NUMCODE);
-
-        return numcodeVal;
-    }
-
-
-    private String readCharcodeVal(XmlPullParser parser)
-            throws XmlPullParserException, IOException {
-
-        parser.require(XmlPullParser.START_TAG, nameSpaces, TAG_CHARCODE);
-        String charcodeVal = readResult(parser);
-        parser.require(XmlPullParser.END_TAG, nameSpaces, TAG_CHARCODE);
-
-        return charcodeVal;
-    }
-
-
-    private String readNominalVal(XmlPullParser parser)
-            throws XmlPullParserException, IOException {
-
-        parser.require(XmlPullParser.START_TAG, nameSpaces, TAG_NOMINAL);
-        String nominalVal = readResult(parser);
-        parser.require(XmlPullParser.END_TAG, nameSpaces, TAG_NOMINAL);
-
-        return nominalVal;
-    }
-
-
-    private String readNameVal(XmlPullParser parser)
-            throws XmlPullParserException, IOException {
-
-        parser.require(XmlPullParser.START_TAG, nameSpaces, TAG_NAME);
-        String nameVal = readResult(parser);
-        parser.require(XmlPullParser.END_TAG, nameSpaces, TAG_NAME);
-
-        return nameVal;
-    }
-
-
-    private String readValueVal(XmlPullParser parser)
-            throws XmlPullParserException, IOException {
-
-        parser.require(XmlPullParser.START_TAG, nameSpaces, TAG_VALUE);
-        String valueVal = readResult(parser);
-        parser.require(XmlPullParser.END_TAG, nameSpaces, TAG_VALUE);
-
-        return valueVal;
+        parser.require(XmlPullParser.START_TAG, nameSpaces, TAG);
+        String val = readResult(parser);
+        parser.require(XmlPullParser.END_TAG, nameSpaces, TAG);
+        return val;
     }
 
     private String readResult(XmlPullParser parser)

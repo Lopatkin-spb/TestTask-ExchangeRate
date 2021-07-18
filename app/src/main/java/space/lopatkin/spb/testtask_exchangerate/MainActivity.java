@@ -3,48 +3,51 @@ package space.lopatkin.spb.testtask_exchangerate;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+//import android.support.v4.;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import space.lopatkin.spb.testtask_exchangerate.ui.Fragment;
 import space.lopatkin.spb.testtask_exchangerate.utils.NetworkReceiver;
 
 public class MainActivity extends AppCompatActivity {
+
+    // залогировать ошибки- обработать
+    // выпадающий список валют
+
     public static final String http = "http://www.cbr.ru/scripts/XML_daily.asp";
     public static final String TAG = "myLogs";
     public static final int DIALOG_NO_INTERNET = R.string.dialog_no_internet;
-    public static final int TOAST_ERROR_LOADING = R.string.toast_error_loading;
-    public static final String TEXT_VIEW_TITLE = "Курс валюты ЦБРФ от ";
+    public static final int DIALOG_ERROR_LOADING = R.string.dialog_error_loading;
+    public static final int DIALOG_GOOD_LOADING = R.string.dialog_good_loading;
+    public static final int DIALOG_BUTTON_NEGATIVE = R.string.dialog_button_negative;
+
+
+    public static final String TEXT_VIEW_TITLE = "Курс валюты ЦБРФ";
+    public static final int TEXT_RIGHT_VALUTE = R.string.text_right_valute;
+
 
     public static final String KEY_IS_APP_TURN = "isTurn";
     public static final String KEY_IS_LOADER_STARTED = "isLoaderStarted";
     public static final String KEY_HTTP = "url";
     public static final String TARGET_VALUTE = "Японских иен";
     private NetworkReceiver receiver = new NetworkReceiver();
-    private Fragment fragment =new Fragment();
+    private Fragment fragment = new Fragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        if (savedInstanceState ==null) {
+        if (savedInstanceState == null) {
 
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, fragment)
                     .commit();
-
-
-//            fragmentManager.beginTransaction()
-//                    .replace(R.id.fragment_container, fragmentFacts)
-//                    .addToBackStack("backstack")
-//                    .commit();
-
         }
-
-
     }
-
 
     @Override
     protected void onStart() {
@@ -58,5 +61,4 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         unregisterReceiver(receiver);
     }
-
 }

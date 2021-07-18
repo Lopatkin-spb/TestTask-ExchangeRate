@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -15,6 +14,7 @@ import androidx.loader.content.Loader;
 import space.lopatkin.spb.testtask_exchangerate.R;
 import space.lopatkin.spb.testtask_exchangerate.model.Valute;
 import space.lopatkin.spb.testtask_exchangerate.utils.AsyncLoader;
+import space.lopatkin.spb.testtask_exchangerate.utils.MiniDialog;
 import space.lopatkin.spb.testtask_exchangerate.utils.SharedPreferencesHelper;
 
 import java.util.ArrayList;
@@ -22,22 +22,10 @@ import java.util.List;
 
 import static space.lopatkin.spb.testtask_exchangerate.MainActivity.*;
 
-/**
- * A simple {@link androidx.fragment.app.Fragment} subclass.
- * Use the {@link Fragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class Fragment extends androidx.fragment.app.Fragment
         implements LoaderManager.LoaderCallbacks<List<Valute>> {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
+    private static final String TAG_MINI_DIALOG = "miniDialog";
     private SharedPreferencesHelper mSharedPreferencesHelper;
     private List<Valute> listValutes = new ArrayList();
     private TextView viewTitle;
@@ -52,25 +40,14 @@ public class Fragment extends androidx.fragment.app.Fragment
     private boolean isAppTurn = false;
     private boolean isLoaderStarted = false;
 
-
     public Fragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment BlankFragment.
-     */
     // TODO: Rename and change types and number of parameters
-    public static Fragment newInstance(String param1, String param2) {
+    public static Fragment newInstance() {
         Fragment fragment = new Fragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -78,10 +55,6 @@ public class Fragment extends androidx.fragment.app.Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
         if (savedInstanceState != null) {
             isAppTurn = savedInstanceState.getBoolean(KEY_IS_APP_TURN);
             isLoaderStarted = savedInstanceState.getBoolean(KEY_IS_LOADER_STARTED);
@@ -98,8 +71,7 @@ public class Fragment extends androidx.fragment.app.Fragment
         viewTitle = view.findViewById(R.id.view_title);
         viewLeftValute = view.findViewById(R.id.view_left_valute);
         viewRightValute = view.findViewById(R.id.view_right_valute);
-
-        buttonRefresh = view.findViewById(R.id.button_refresh);
+        buttonRefresh = view.findViewById(R.id.view_button_refresh);
         viewLeftValue = view.findViewById(R.id.view_left_value);
         viewRightValue = view.findViewById(R.id.view_right_value);
         progressBar = view.findViewById(R.id.progress_bar);
@@ -149,14 +121,13 @@ public class Fragment extends androidx.fragment.app.Fragment
 
     @Override
     public void onLoadFinished(@NonNull Loader<List<Valute>> loader, List<Valute> data) {
-        if (data == null && !isAppTurn) {
-            Toast.makeText(getActivity(), TOAST_ERROR_LOADING, Toast.LENGTH_LONG).show();
-
-        } else if (data == null && isAppTurn) {
-        } else {
+        if (!ifThereIsData(data) && !isAppTurn) {
+            showDialog(DIALOG_ERROR_LOADING);
+        } else if (ifThereIsData(data) && !isAppTurn) {
             listValutes = data;
             updateUI(listValutes);
             mSharedPreferencesHelper.saveValutes(data);
+            showDialog(DIALOG_GOOD_LOADING);
         }
         isLoaderStarted = false;
         isAppTurn = true;
@@ -169,7 +140,6 @@ public class Fragment extends androidx.fragment.app.Fragment
         //для закрытия сложных устройств, типа курсора
     }
 
-
     private void loaderStartLoading() {
         isAppTurn = false;
         isLoaderStarted = true;
@@ -181,10 +151,10 @@ public class Fragment extends androidx.fragment.app.Fragment
 
     private void updateUI(List<Valute> list) {
         int index = getTargetValute(list);
-        viewTitle.setText(TEXT_VIEW_TITLE + "" + list.get(index).getDate());
+        viewTitle.setText(TEXT_VIEW_TITLE + " " + list.get(index).getDate());
         viewLeftValute.setText(
                 list.get(index).getName() + " (" + list.get(index).getCharCode() + ")");
-        viewRightValute.setText("Российский рубль (RUB)");
+        viewRightValute.setText(TEXT_RIGHT_VALUTE);
         viewLeftValue.setText(list.get(index).getNominal());
         viewRightValue.setText(list.get(index).getValue());
     }
@@ -205,6 +175,21 @@ public class Fragment extends androidx.fragment.app.Fragment
         isAppTurn = true;
         outState.putBoolean(KEY_IS_APP_TURN, isAppTurn);
         outState.putBoolean(KEY_IS_LOADER_STARTED, isLoaderStarted);
+    }
+
+    private boolean ifThereIsData(List<Valute> list) {
+        boolean out = false;
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getName().equals(TARGET_VALUTE)) {
+                out = true;
+            }
+        }
+        return out;
+    }
+
+    private void showDialog(int message) {
+        MiniDialog dialog = MiniDialog.newInstance(message);
+        dialog.show(getFragmentManager(), TAG_MINI_DIALOG);
     }
 
 }

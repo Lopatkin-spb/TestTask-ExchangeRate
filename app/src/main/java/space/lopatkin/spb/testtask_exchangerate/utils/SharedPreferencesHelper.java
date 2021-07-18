@@ -36,9 +36,9 @@ public class SharedPreferencesHelper {
     public ArrayList getSaveValutes() {
         String json = mSharedPreferences.getString(VALUTES_KEY, null);
         ArrayList<Valute> arrayList = mGson.fromJson(json, VALUTES_TYPE);
-//        if (arrayList == null) {
-//            arrayList = new ArrayList<>();
-//        }
+        if (arrayList == null) {
+            arrayList = new ArrayList<>();
+        }
         return arrayList;
     }
 
