@@ -2,13 +2,14 @@
     <string name="app_name">TestTask-ExchangeRate</string>
 
     <string name="dialog_no_internet">Подключение к интернету отсутствует!</string>
-    <string name="dialog_button_retry">Повторить</string>
+    <string name="dialog_button_retry">Повторить.</string>
     <string name="dialog_error_loading">Ошибка загрузки.</string>
     <string name="dialog_good_loading">Загрузка прошла успешно. Данные обновлены.</string>
+    <string name="dialog_info_spinner">Обновите данные и слева выберите нужныю валюту.</string>
+
     <string name="dialog_button_negative">Закрыть.</string>
 
     <string name="text_title">Курс валюты ЦБРФ</string>
-    <string name="text_left_valute">Японская иена (JPY)</string>
     <string name="text_right_valute">Российский рубль (RUB)</string>
     <string name="text_left_value">000.000</string>
     <string name="text_right_value">000.000</string>

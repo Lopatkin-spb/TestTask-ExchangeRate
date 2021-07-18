@@ -1,9 +1,7 @@
 package space.lopatkin.spb.testtask_exchangerate.ui;
 
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -29,12 +27,14 @@ public class Fragment extends androidx.fragment.app.Fragment
     private SharedPreferencesHelper mSharedPreferencesHelper;
     private List<Valute> listValutes = new ArrayList();
     private TextView viewTitle;
-    private TextView viewLeftValute;
+    private Spinner viewSpinnerLeftValute;
     private TextView viewRightValute;
     private TextView viewLeftValue;
     private TextView viewRightValue;
     private Button buttonRefresh;
     private ProgressBar progressBar;
+
+
     private Loader<List<Valute>> loader;
     private int idLoader = 1;
     private boolean isAppTurn = false;
@@ -61,6 +61,41 @@ public class Fragment extends androidx.fragment.app.Fragment
         }
     }
 
+    private void buildSpinner() {
+        if (listValutes.size() > 10) {
+            String[] list = getSpinnerList(listValutes);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                    getActivity(), android.R.layout.simple_selectable_list_item, list);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            viewSpinnerLeftValute.setAdapter(adapter);
+            viewSpinnerLeftValute.setSelection(33); //0-33
+            viewSpinnerLeftValute.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    viewLeftValue.setText(listValutes.get(i).getNominal());
+                    viewRightValue.setText(listValutes.get(i).getValue());
+
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+
+                }
+            });
+        } else {
+            showDialog(DIALOG_INFO_SPINNER);
+        }
+    }
+
+    private String[] getSpinnerList(List<Valute> fullList) {
+        String[] spinnerList = new String[fullList.size()];
+        for (int line = 0; line < fullList.size(); line++) {
+            spinnerList[line] = fullList.get(line).getName()
+                    + " (" + fullList.get(line).getCharCode() + ")";
+        }
+        return spinnerList;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -69,7 +104,7 @@ public class Fragment extends androidx.fragment.app.Fragment
         mSharedPreferencesHelper = new SharedPreferencesHelper(getActivity());
 
         viewTitle = view.findViewById(R.id.view_title);
-        viewLeftValute = view.findViewById(R.id.view_left_valute);
+        viewSpinnerLeftValute = view.findViewById(R.id.view_left_spinner_valute);
         viewRightValute = view.findViewById(R.id.view_right_valute);
         buttonRefresh = view.findViewById(R.id.view_button_refresh);
         viewLeftValue = view.findViewById(R.id.view_left_value);
@@ -91,6 +126,7 @@ public class Fragment extends androidx.fragment.app.Fragment
         if (listValutes != null) {
             updateUI(listValutes);
         }
+        buildSpinner();
     }
 
     private View.OnClickListener buttonOnClickListener = new View.OnClickListener() {
@@ -152,8 +188,6 @@ public class Fragment extends androidx.fragment.app.Fragment
     private void updateUI(List<Valute> list) {
         int index = getTargetValute(list);
         viewTitle.setText(TEXT_VIEW_TITLE + " " + list.get(index).getDate());
-        viewLeftValute.setText(
-                list.get(index).getName() + " (" + list.get(index).getCharCode() + ")");
         viewRightValute.setText(TEXT_RIGHT_VALUTE);
         viewLeftValue.setText(list.get(index).getNominal());
         viewRightValue.setText(list.get(index).getValue());

@@ -21,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     public static final int DIALOG_NO_INTERNET = R.string.dialog_no_internet;
     public static final int DIALOG_ERROR_LOADING = R.string.dialog_error_loading;
     public static final int DIALOG_GOOD_LOADING = R.string.dialog_good_loading;
+    public static final int DIALOG_INFO_SPINNER = R.string.dialog_info_spinner;
+
     public static final int DIALOG_BUTTON_NEGATIVE = R.string.dialog_button_negative;
 
 
