@@ -25,7 +25,6 @@
             android:id="@+id/view_left_spinner_valute"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/text_left_valute"
             android:textSize="15dp"
             android:padding="10dp"
             android:gravity="center"
