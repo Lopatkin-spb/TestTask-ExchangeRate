@@ -15,6 +15,8 @@ public class SharedPreferencesHelper {
 
     public static final String SHARED_PREF_NAME = "SHARED_PREF_NAME";
     public static final String VALUTES_KEY = "VALUTES_KEY";
+    public static final String TARGET_VALUTE_KEY = "TARGET_VALUTE_KEY";
+
     public static final Type VALUTES_TYPE = new TypeToken<List<Valute>>() {
     }.getType();
 
@@ -40,6 +42,17 @@ public class SharedPreferencesHelper {
             arrayList = new ArrayList<>();
         }
         return arrayList;
+    }
+
+    public void saveTargetValute(int targetValute) {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putInt(TARGET_VALUTE_KEY, targetValute);
+        editor.apply();
+    }
+
+    public int getTargetValute() {
+        int valute = mSharedPreferences.getInt(TARGET_VALUTE_KEY, 0);
+        return valute;
     }
 
 

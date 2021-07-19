@@ -10,56 +10,57 @@
 
     <TextView
             android:id="@+id/view_title"
-            android:layout_width="match_parent"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:text="@string/text_title"
             android:textSize="25dp"
             android:gravity="center"
             android:padding="20dp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_margin="140dp"
+            android:background="@android:drawable/editbox_dropdown_light_frame"
+
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="36dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"/>
-
-
-
-
-
+            app:layout_constraintBottom_toTopOf="@+id/view_left_spinner_valute"
+            android:layout_marginBottom="140dp"/>
     <Spinner
             android:id="@+id/view_left_spinner_valute"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="100dp"
             android:textSize="15dp"
             android:padding="10dp"
             android:gravity="center"
 
+            android:background="@android:drawable/editbox_dropdown_light_frame"
+
+            android:layout_margin="5dp"
+
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="99dp"
-            app:layout_constraintTop_toBottomOf="@+id/view_title"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/view_right_valute"/>
+            app:layout_constraintEnd_toStartOf="@+id/view_right_valute"
+            app:layout_constraintBottom_toTopOf="@+id/view_left_value"/>
 
 
     <TextView
             android:id="@+id/view_right_valute"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="100dp"
             android:text="@string/text_right_valute"
             android:textSize="15dp"
             android:padding="10dp"
             app:layout_constraintHorizontal_weight="1"
             android:gravity="center"
 
+            android:background="@android:drawable/editbox_dropdown_light_frame"
+
+            android:layout_margin="5dp"
+
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/view_left_spinner_valute"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintBottom_toBottomOf="@+id/view_left_spinner_valute"
             app:layout_constraintTop_toTopOf="@+id/view_left_spinner_valute"/>
-
-
-
 
 
     <TextView
@@ -71,11 +72,16 @@
             android:padding="10dp"
             android:gravity="center"
 
+
+            android:background="@android:drawable/editbox_dropdown_light_frame"
+            android:layout_margin="5dp"
+
+
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/view_button_refresh"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/view_right_value"
-            android:layout_marginBottom="24dp"/>
+            app:layout_constraintEnd_toStartOf="@+id/view_right_value"/>
+<!--            android:layout_marginBottom="24dp"/>-->
     <TextView
             android:id="@+id/view_right_value"
             android:layout_width="0dp"
@@ -85,14 +91,14 @@
             android:padding="10dp"
             android:gravity="center"
 
+            android:background="@android:drawable/editbox_dropdown_light_frame"
+            android:layout_margin="5dp"
+
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/view_button_refresh"
             app:layout_constraintStart_toEndOf="@+id/view_left_value"
-            app:layout_constraintHorizontal_bias="0.5"
-            android:layout_marginBottom="24dp"/>
-
-
-
+            app:layout_constraintHorizontal_bias="0.5"/>
+<!--            android:layout_marginBottom="24dp"/>-->
 
 
     <Button
@@ -103,8 +109,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/view_title"
-            app:layout_constraintVertical_bias="0.741"/>
+            android:layout_marginBottom="96dp"/>
     <ProgressBar
             android:id="@+id/progress_bar"
             android:visibility="invisible"

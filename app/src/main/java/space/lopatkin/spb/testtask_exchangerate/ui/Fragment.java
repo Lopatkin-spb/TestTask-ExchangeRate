@@ -39,6 +39,7 @@ public class Fragment extends androidx.fragment.app.Fragment
     private int idLoader = 1;
     private boolean isAppTurn = false;
     private boolean isLoaderStarted = false;
+    int choiseUserValute = 33;
 
     public Fragment() {
         // Required empty public constructor
@@ -68,13 +69,15 @@ public class Fragment extends androidx.fragment.app.Fragment
                     getActivity(), android.R.layout.simple_selectable_list_item, list);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             viewSpinnerLeftValute.setAdapter(adapter);
-            viewSpinnerLeftValute.setSelection(33); //0-33
+            viewSpinnerLeftValute.setSelection(choiseUserValute); //0-33
             viewSpinnerLeftValute.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                     viewLeftValue.setText(listValutes.get(i).getNominal());
                     viewRightValue.setText(listValutes.get(i).getValue());
-
+                    choiseUserValute = i;
+                    mSharedPreferencesHelper.saveTargetValute(choiseUserValute);
+//                    Toast.makeText(getActivity(), "position = "+i, Toast.LENGTH_LONG).show();
                 }
 
                 @Override
@@ -186,22 +189,25 @@ public class Fragment extends androidx.fragment.app.Fragment
     }
 
     private void updateUI(List<Valute> list) {
-        int index = getTargetValute(list);
-        viewTitle.setText(TEXT_VIEW_TITLE + " " + list.get(index).getDate());
+//        int index = getTargetValute(list);
+        choiseUserValute = mSharedPreferencesHelper.getTargetValute();
+
+        viewTitle.setText(TEXT_VIEW_TITLE + " " + list.get(choiseUserValute).getDate());
         viewRightValute.setText(TEXT_RIGHT_VALUTE);
-        viewLeftValue.setText(list.get(index).getNominal());
-        viewRightValue.setText(list.get(index).getValue());
+//        viewLeftValue.setText(list.get(index).getNominal());
+//        viewRightValue.setText(list.get(index).getValue());
+
     }
 
-    private int getTargetValute(List<Valute> list) {
-        int out = 0;
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getName().equals(TARGET_VALUTE)) {
-                out = i;
-            }
-        }
-        return out;
-    }
+//    private int getTargetValute(List<Valute> list) {
+//        int out = 0;
+//        for (int i = 0; i < list.size(); i++) {
+//            if (list.get(i).getName().equals(TARGET_VALUTE)) {
+//                out = i;
+//            }
+//        }
+//        return out;
+//    }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
