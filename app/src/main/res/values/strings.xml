@@ -1,18 +1,22 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">TestTask-ExchangeRate</string>
+<!--    <string name="app_name">TestTask-ExchangeRate</string>-->
+    <string name="app_name">Курсы валют</string>
 
     <string name="dialog_no_internet">Подключение к интернету отсутствует!</string>
     <string name="dialog_button_retry">Повторить.</string>
     <string name="dialog_error_loading">Ошибка загрузки.</string>
-    <string name="dialog_good_loading">Загрузка прошла успешно. Данные обновлены.</string>
-    <string name="dialog_info_spinner">Обновите данные и слева выберите нужныю валюту.</string>
-
+    <string name="dialog_good_loading">Данные успешно обновлены.</string>
+    <string name="dialog_info_spinner">Обновите данные и слева выберите нужную валюту.</string>
+    <string name="dialog_info_converter">Введите число.</string>
     <string name="dialog_button_negative">Закрыть.</string>
 
-    <string name="text_title">Курс валюты ЦБРФ</string>
+    <string name="text_title">Курс валют ЦБРФ</string>
     <string name="text_right_valute">Российский рубль (RUB)</string>
-    <string name="text_left_value">000.000</string>
-    <string name="text_right_value">000.000</string>
+    <string name="text_value_default">0</string>
+    <string name="text_label_value">курс</string>
+    <string name="text_label_converter">конвертер</string>
 
     <string name="text_button_refresh">Обновить</string>
+    <string name="text_button_calculate">Посчитать</string>
+
 </resources>

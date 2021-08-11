@@ -1,6 +1,7 @@
 package space.lopatkin.spb.testtask_exchangerate.ui;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,11 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import space.lopatkin.spb.testtask_exchangerate.R;
 import space.lopatkin.spb.testtask_exchangerate.model.Valute;
-import space.lopatkin.spb.testtask_exchangerate.utils.AsyncLoader;
-import space.lopatkin.spb.testtask_exchangerate.utils.MiniDialog;
-import space.lopatkin.spb.testtask_exchangerate.utils.SharedPreferencesHelper;
+import space.lopatkin.spb.testtask_exchangerate.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,21 +25,31 @@ public class Fragment extends androidx.fragment.app.Fragment
 
     private static final String TAG_MINI_DIALOG = "miniDialog";
     private SharedPreferencesHelper mSharedPreferencesHelper;
+    private Calculator calculator = new Calculator();
     private List<Valute> listValutes = new ArrayList();
     private TextView viewTitle;
-    private Spinner viewSpinnerLeftValute;
+    private Spinner viewLeftValuteSpinner;
     private TextView viewRightValute;
     private TextView viewLeftValue;
     private TextView viewRightValue;
+    private EditText viewLeftConverter;
+    private TextView viewRightConverter;
+    private LinearLayout containerLeftValue;
+    private LinearLayout containerRightValue;
+    private LinearLayout containerLeftConverter;
+    private LinearLayout containerRightConverter;
     private Button buttonRefresh;
+    private ImageButton buttonRoundCalculate;
     private ProgressBar progressBar;
-
 
     private Loader<List<Valute>> loader;
     private int idLoader = 1;
     private boolean isAppTurn = false;
     private boolean isLoaderStarted = false;
-    int choiseUserValute = 33;
+    private int positionSpinnerValute = 33;
+    private String userInputLeftValue = null;
+    private String userRightValue = null;
+    private int countSpinner = 0;
 
     public Fragment() {
         // Required empty public constructor
@@ -59,60 +69,32 @@ public class Fragment extends androidx.fragment.app.Fragment
         if (savedInstanceState != null) {
             isAppTurn = savedInstanceState.getBoolean(KEY_IS_APP_TURN);
             isLoaderStarted = savedInstanceState.getBoolean(KEY_IS_LOADER_STARTED);
+            userInputLeftValue = savedInstanceState.getString(KEY_USER_INPUT_LEFT_VALUE);
+            userRightValue = savedInstanceState.getString(KEY_USER_CALCULATE_RIGHT_VALUE);
         }
-    }
-
-    private void buildSpinner() {
-        if (listValutes.size() > 10) {
-            String[] list = getSpinnerList(listValutes);
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                    getActivity(), android.R.layout.simple_selectable_list_item, list);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            viewSpinnerLeftValute.setAdapter(adapter);
-            viewSpinnerLeftValute.setSelection(choiseUserValute); //0-33
-            viewSpinnerLeftValute.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    viewLeftValue.setText(listValutes.get(i).getNominal());
-                    viewRightValue.setText(listValutes.get(i).getValue());
-                    choiseUserValute = i;
-                    mSharedPreferencesHelper.saveTargetValute(choiseUserValute);
-//                    Toast.makeText(getActivity(), "position = "+i, Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-
-                }
-            });
-        } else {
-            showDialog(DIALOG_INFO_SPINNER);
-        }
-    }
-
-    private String[] getSpinnerList(List<Valute> fullList) {
-        String[] spinnerList = new String[fullList.size()];
-        for (int line = 0; line < fullList.size(); line++) {
-            spinnerList[line] = fullList.get(line).getName()
-                    + " (" + fullList.get(line).getCharCode() + ")";
-        }
-        return spinnerList;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment, container, false);
-
         mSharedPreferencesHelper = new SharedPreferencesHelper(getActivity());
+        containerLeftValue = view.findViewById(R.id.container_left_value);
+        containerRightValue = view.findViewById(R.id.container_right_value);
+        containerLeftConverter = view.findViewById(R.id.container_left_converter);
+        containerRightConverter = view.findViewById(R.id.container_right_converter);
+        progressBar = view.findViewById(R.id.progress_bar);
 
         viewTitle = view.findViewById(R.id.view_title);
-        viewSpinnerLeftValute = view.findViewById(R.id.view_left_spinner_valute);
+        viewLeftValuteSpinner = view.findViewById(R.id.view_left_valute_spinner);
         viewRightValute = view.findViewById(R.id.view_right_valute);
+        viewLeftValue = view.findViewById(R.id.text_left_value);
+        viewRightValue = view.findViewById(R.id.text_right_value);
+        viewLeftConverter = view.findViewById(R.id.text_left_converter);
+        viewRightConverter = view.findViewById(R.id.text_right_converter);
+
         buttonRefresh = view.findViewById(R.id.view_button_refresh);
-        viewLeftValue = view.findViewById(R.id.view_left_value);
-        viewRightValue = view.findViewById(R.id.view_right_value);
-        progressBar = view.findViewById(R.id.progress_bar);
+        buttonRoundCalculate = view.findViewById(R.id.view_button_arrow);
         // Inflate the layout for this fragment
         return view;
     }
@@ -121,7 +103,9 @@ public class Fragment extends androidx.fragment.app.Fragment
     public void onResume() {
         super.onResume();
         listValutes = mSharedPreferencesHelper.getSaveValutes();
-        buttonRefresh.setOnClickListener(buttonOnClickListener);
+        buttonRefresh.setOnClickListener(refreshOnClickListener);
+        buttonRoundCalculate.setOnClickListener(calculateOnClickListener);
+        setUpViewElevation();
         initLoader();
         if (isLoaderStarted) {
             loaderStartLoading();
@@ -129,16 +113,68 @@ public class Fragment extends androidx.fragment.app.Fragment
         if (listValutes != null) {
             updateUI(listValutes);
         }
-        buildSpinner();
+        setUpSpinner();
     }
 
-    private View.OnClickListener buttonOnClickListener = new View.OnClickListener() {
+
+    private void setUpSpinner() {
+        if (listValutes.size() > 10) {
+            String[] list = getSpinnerList(listValutes);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                    getActivity(), android.R.layout.simple_selectable_list_item, list);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            viewLeftValuteSpinner.setAdapter(adapter);
+            viewLeftValuteSpinner.setSelection(positionSpinnerValute); //0-33
+            viewLeftValuteSpinner.setOnItemSelectedListener(spinnerOnItemSelectedListener);
+        } else {
+            showDialog(DIALOG_INFO_SPINNER);
+        }
+    }
+
+
+    private View.OnClickListener refreshOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             loaderStartLoading();
         }
     };
 
+    private View.OnClickListener calculateOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            String userInput = viewLeftConverter.getText().toString();
+            if (!userInput.equals("")) {
+                String newRightValue = calculator.calculate(listValutes, positionSpinnerValute, userInput);
+                viewRightConverter.setText(newRightValue);
+            } else {
+                showDialog(DIALOG_INFO_CONVERTER);
+            }
+        }
+    };
+
+    private AdapterView.OnItemSelectedListener spinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            countSpinner++;
+            positionSpinnerValute = i;
+            mSharedPreferencesHelper.saveTargetValute(positionSpinnerValute);
+            if (countSpinner == 2 && isAppTurn) {
+                viewLeftConverter.setText(userInputLeftValue);
+                viewRightConverter.setText(userRightValue);
+                isAppTurn = false;
+            } else {
+                viewLeftValue.setText(listValutes.get(i).getNominal());
+                viewRightValue.setText(listValutes.get(i).getValue().replace(",", "."));
+                viewLeftConverter.setText("");
+                viewLeftConverter.setHint("0");
+                viewRightConverter.setText("0");
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+        }
+    };
 
     private void initLoader() {
         Bundle bundle = new Bundle();
@@ -169,7 +205,7 @@ public class Fragment extends androidx.fragment.app.Fragment
             showDialog(DIALOG_GOOD_LOADING);
         }
         isLoaderStarted = false;
-        isAppTurn = true;
+        isAppTurn = false;
         buttonRefresh.setEnabled(true);
         progressBar.setVisibility(ProgressBar.INVISIBLE);
     }
@@ -189,33 +225,11 @@ public class Fragment extends androidx.fragment.app.Fragment
     }
 
     private void updateUI(List<Valute> list) {
-//        int index = getTargetValute(list);
-        choiseUserValute = mSharedPreferencesHelper.getTargetValute();
-
-        viewTitle.setText(TEXT_VIEW_TITLE + " " + list.get(choiseUserValute).getDate());
+        positionSpinnerValute = mSharedPreferencesHelper.getTargetValute();
+        viewTitle.setText(TEXT_VIEW_TITLE + " " + list.get(positionSpinnerValute).getDate());
         viewRightValute.setText(TEXT_RIGHT_VALUTE);
-//        viewLeftValue.setText(list.get(index).getNominal());
-//        viewRightValue.setText(list.get(index).getValue());
-
     }
 
-//    private int getTargetValute(List<Valute> list) {
-//        int out = 0;
-//        for (int i = 0; i < list.size(); i++) {
-//            if (list.get(i).getName().equals(TARGET_VALUTE)) {
-//                out = i;
-//            }
-//        }
-//        return out;
-//    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        isAppTurn = true;
-        outState.putBoolean(KEY_IS_APP_TURN, isAppTurn);
-        outState.putBoolean(KEY_IS_LOADER_STARTED, isLoaderStarted);
-    }
 
     private boolean ifThereIsData(List<Valute> list) {
         boolean out = false;
@@ -227,9 +241,57 @@ public class Fragment extends androidx.fragment.app.Fragment
         return out;
     }
 
+    private String[] getSpinnerList(List<Valute> fullList) {
+        String[] spinnerList = new String[fullList.size()];
+        for (int line = 0; line < fullList.size(); line++) {
+            spinnerList[line] = "> " + fullList.get(line).getName()
+                    + " (" + fullList.get(line).getCharCode() + ") <";
+        }
+        return spinnerList;
+    }
+
     private void showDialog(int message) {
         MiniDialog dialog = MiniDialog.newInstance(message);
         dialog.show(getFragmentManager(), TAG_MINI_DIALOG);
     }
+
+
+    private void setUpViewElevation() {
+        viewTitle.setTranslationZ(2);
+        viewTitle.setElevation(26);
+
+        buttonRoundCalculate.setTranslationZ(10);
+        buttonRoundCalculate.setElevation(20);
+        buttonRoundCalculate.setStateListAnimator(null);
+
+        viewLeftValuteSpinner.setTranslationZ(2);
+        viewLeftValuteSpinner.setElevation(16);
+        viewRightValute.setTranslationZ(2);
+        viewRightValute.setElevation(16);
+
+        containerLeftValue.setTranslationZ(2);
+        containerLeftValue.setElevation(16);
+        containerRightValue.setTranslationZ(2);
+        containerRightValue.setElevation(16);
+
+        containerLeftConverter.setTranslationZ(2);
+        containerLeftConverter.setElevation(16);
+        containerRightConverter.setTranslationZ(2);
+        containerRightConverter.setElevation(16);
+    }
+
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        isAppTurn = true;
+        outState.putBoolean(KEY_IS_APP_TURN, isAppTurn);
+        outState.putBoolean(KEY_IS_LOADER_STARTED, isLoaderStarted);
+        userInputLeftValue = viewLeftConverter.getText().toString();
+        userRightValue = viewRightConverter.getText().toString();
+        outState.putString(KEY_USER_INPUT_LEFT_VALUE, userInputLeftValue);
+        outState.putString(KEY_USER_CALCULATE_RIGHT_VALUE, userRightValue);
+    }
+
 
 }
