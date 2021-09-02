@@ -35,7 +35,7 @@ public class SharedPreferencesHelper {
         editor.apply();
     }
 
-    public ArrayList getSaveValutes() {
+    public ArrayList getValutes() {
         String json = mSharedPreferences.getString(VALUTES_KEY, null);
         ArrayList<Valute> arrayList = mGson.fromJson(json, VALUTES_TYPE);
         if (arrayList == null) {
@@ -44,15 +44,15 @@ public class SharedPreferencesHelper {
         return arrayList;
     }
 
-    public void saveTargetValute(int targetValute) {
+    public void savePositionValute(int positionValute) {
         SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putInt(TARGET_VALUTE_KEY, targetValute);
+        editor.putInt(TARGET_VALUTE_KEY, positionValute);
         editor.apply();
     }
 
-    public int getTargetValute() {
-        int valute = mSharedPreferences.getInt(TARGET_VALUTE_KEY, 0);
-        return valute;
+    public int getPositionValute() {
+        int positionValute = mSharedPreferences.getInt(TARGET_VALUTE_KEY, 0);
+        return positionValute;
     }
 
 

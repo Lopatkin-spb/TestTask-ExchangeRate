@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import space.lopatkin.spb.testtask_exchangerate.R;
 import space.lopatkin.spb.testtask_exchangerate.model.Valute;
 import space.lopatkin.spb.testtask_exchangerate.utils.*;
@@ -102,7 +101,7 @@ public class Fragment extends androidx.fragment.app.Fragment
     @Override
     public void onResume() {
         super.onResume();
-        listValutes = mSharedPreferencesHelper.getSaveValutes();
+        listValutes = mSharedPreferencesHelper.getValutes();
         buttonRefresh.setOnClickListener(refreshOnClickListener);
         buttonRoundCalculate.setOnClickListener(calculateOnClickListener);
         setUpViewElevation();
@@ -110,7 +109,7 @@ public class Fragment extends androidx.fragment.app.Fragment
         if (isLoaderStarted) {
             loaderStartLoading();
         }
-        if (listValutes != null) {
+        if (listValutes.size() != 0) {
             updateUI(listValutes);
         }
         setUpSpinner();
@@ -157,7 +156,7 @@ public class Fragment extends androidx.fragment.app.Fragment
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
             countSpinner++;
             positionSpinnerValute = i;
-            mSharedPreferencesHelper.saveTargetValute(positionSpinnerValute);
+            mSharedPreferencesHelper.savePositionValute(positionSpinnerValute);
             if (countSpinner == 2 && isAppTurn) {
                 viewLeftConverter.setText(userInputLeftValue);
                 viewRightConverter.setText(userRightValue);
@@ -225,7 +224,7 @@ public class Fragment extends androidx.fragment.app.Fragment
     }
 
     private void updateUI(List<Valute> list) {
-        positionSpinnerValute = mSharedPreferencesHelper.getTargetValute();
+        positionSpinnerValute = mSharedPreferencesHelper.getPositionValute();
         viewTitle.setText(TEXT_VIEW_TITLE + " " + list.get(positionSpinnerValute).getDate());
         viewRightValute.setText(TEXT_RIGHT_VALUTE);
     }
