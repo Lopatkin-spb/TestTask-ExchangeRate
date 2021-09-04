@@ -3,7 +3,7 @@ package space.lopatkin.spb.testtask_exchangerate.utils;
 import android.util.Xml;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
-import space.lopatkin.spb.testtask_exchangerate.model.Valute;
+import space.lopatkin.spb.testtask_exchangerate.db.Valute;
 
 import java.io.IOException;
 import java.io.InputStream;

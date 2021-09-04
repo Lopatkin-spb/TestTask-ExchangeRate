@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.loader.content.AsyncTaskLoader;
 import org.xmlpull.v1.XmlPullParserException;
 import space.lopatkin.spb.testtask_exchangerate.MainActivity;
-import space.lopatkin.spb.testtask_exchangerate.model.Valute;
+import space.lopatkin.spb.testtask_exchangerate.db.Valute;
 
 import java.io.IOException;
 import java.util.ArrayList;

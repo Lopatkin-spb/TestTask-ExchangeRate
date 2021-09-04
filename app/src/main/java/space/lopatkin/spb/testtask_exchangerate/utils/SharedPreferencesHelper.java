@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import space.lopatkin.spb.testtask_exchangerate.model.Valute;
+import space.lopatkin.spb.testtask_exchangerate.db.Valute;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

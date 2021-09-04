@@ -1,4 +1,4 @@
-package space.lopatkin.spb.testtask_exchangerate.model;
+package space.lopatkin.spb.testtask_exchangerate.db;
 
 public class Valute {
 

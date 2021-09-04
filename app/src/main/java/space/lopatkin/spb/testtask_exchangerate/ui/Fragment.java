@@ -11,7 +11,10 @@ import android.view.ViewGroup;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import space.lopatkin.spb.testtask_exchangerate.R;
-import space.lopatkin.spb.testtask_exchangerate.model.Valute;
+import space.lopatkin.spb.testtask_exchangerate.db.AppDelegate;
+import space.lopatkin.spb.testtask_exchangerate.db.ExchangeValutes;
+import space.lopatkin.spb.testtask_exchangerate.db.ExchangeValutesDao;
+import space.lopatkin.spb.testtask_exchangerate.db.Valute;
 import space.lopatkin.spb.testtask_exchangerate.utils.*;
 
 import java.util.ArrayList;
@@ -101,6 +104,7 @@ public class Fragment extends androidx.fragment.app.Fragment
     @Override
     public void onResume() {
         super.onResume();
+        initDB();
         listValutes = mSharedPreferencesHelper.getValutes();
         buttonRefresh.setOnClickListener(refreshOnClickListener);
         buttonRoundCalculate.setOnClickListener(calculateOnClickListener);
@@ -202,6 +206,7 @@ public class Fragment extends androidx.fragment.app.Fragment
             updateUI(listValutes);
             mSharedPreferencesHelper.saveValutes(data);
             showDialog(DIALOG_GOOD_LOADING);
+            updateDB(data);
         }
         isLoaderStarted = false;
         isAppTurn = false;
@@ -290,6 +295,65 @@ public class Fragment extends androidx.fragment.app.Fragment
         userRightValue = viewRightConverter.getText().toString();
         outState.putString(KEY_USER_INPUT_LEFT_VALUE, userInputLeftValue);
         outState.putString(KEY_USER_CALCULATE_RIGHT_VALUE, userRightValue);
+    }
+
+    ExchangeValutesDao exchangeValutesDao;
+
+    private void initDB() {
+        exchangeValutesDao = ((AppDelegate) getActivity().getApplicationContext())
+                .getExchangeValutesDatabase()
+                .getExchangeValutesDao();
+    }
+
+
+    private void updateDB(List<Valute> data) {
+        ExchangeValutes item = new ExchangeValutes();
+        item.setDate(data.get(1).getDate());
+
+
+        String s0 = data.get(0).getNominal() + "/" + data.get(0).getValue();
+        item.setNumCode_036(s0);
+        String s1 = data.get(1).getNominal() + "/" + data.get(1).getValue();
+        item.setNumCode_944(s1);
+        item.setNumCode_826(data.get(2).getNominal() + "/" + data.get(2).getValue());
+        item.setNumCode_051(data.get(3).getNominal() + "/" + data.get(3).getValue());
+        item.setNumCode_933(data.get(4).getNominal() + "/" + data.get(4).getValue());
+        item.setNumCode_975(data.get(5).getNominal() + "/" + data.get(5).getValue());
+        item.setNumCode_986(data.get(6).getNominal() + "/" + data.get(6).getValue());
+        item.setNumCode_348(data.get(7).getNominal() + "/" + data.get(7).getValue());
+        item.setNumCode_344(data.get(8).getNominal() + "/" + data.get(8).getValue());
+        item.setNumCode_208(data.get(9).getNominal() + "/" + data.get(9).getValue());
+
+        item.setNumCode_840(data.get(10).getNominal() + "/" + data.get(10).getValue());
+        item.setNumCode_978(data.get(11).getNominal() + "/" + data.get(11).getValue());
+        item.setNumCode_356(data.get(12).getNominal() + "/" + data.get(12).getValue());
+        item.setNumCode_398(data.get(13).getNominal() + "/" + data.get(13).getValue());
+        item.setNumCode_124(data.get(14).getNominal() + "/" + data.get(14).getValue());
+        item.setNumCode_417(data.get(15).getNominal() + "/" + data.get(15).getValue());
+        item.setNumCode_156(data.get(16).getNominal() + "/" + data.get(16).getValue());
+        item.setNumCode_498(data.get(17).getNominal() + "/" + data.get(17).getValue());
+        item.setNumCode_578(data.get(18).getNominal() + "/" + data.get(18).getValue());
+        item.setNumCode_985(data.get(19).getNominal() + "/" + data.get(19).getValue());
+
+        item.setNumCode_946(data.get(20).getNominal() + "/" + data.get(20).getValue());
+        item.setNumCode_960(data.get(21).getNominal() + "/" + data.get(21).getValue());
+        item.setNumCode_702(data.get(22).getNominal() + "/" + data.get(22).getValue());
+        item.setNumCode_972(data.get(23).getNominal() + "/" + data.get(23).getValue());
+        item.setNumCode_949(data.get(24).getNominal() + "/" + data.get(24).getValue());
+        item.setNumCode_934(data.get(25).getNominal() + "/" + data.get(25).getValue());
+        item.setNumCode_860(data.get(26).getNominal() + "/" + data.get(26).getValue());
+        item.setNumCode_980(data.get(27).getNominal() + "/" + data.get(27).getValue());
+        item.setNumCode_203(data.get(28).getNominal() + "/" + data.get(28).getValue());
+
+        item.setNumCode_752(data.get(29).getNominal() + "/" + data.get(29).getValue());
+
+        item.setNumCode_756(data.get(30).getNominal() + "/" + data.get(30).getValue());
+        item.setNumCode_710(data.get(31).getNominal() + "/" + data.get(31).getValue());
+        item.setNumCode_410(data.get(32).getNominal() + "/" + data.get(32).getValue());
+        item.setNumCode_392(data.get(33).getNominal() + "/" + data.get(33).getValue());
+
+        exchangeValutesDao.insertExchangeValutes(item);
+
     }
 
 
