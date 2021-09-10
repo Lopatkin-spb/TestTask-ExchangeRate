@@ -10,12 +10,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
+import com.google.gson.Gson;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import space.lopatkin.spb.testtask_exchangerate.R;
 import space.lopatkin.spb.testtask_exchangerate.db.AppDelegate;
 import space.lopatkin.spb.testtask_exchangerate.db.ExchangeValutes;
 import space.lopatkin.spb.testtask_exchangerate.db.ExchangeValutesDao;
 import space.lopatkin.spb.testtask_exchangerate.db.Valute;
 import space.lopatkin.spb.testtask_exchangerate.utils.*;
+import space.lopatkin.spb.testtask_exchangerate.utils.xmlConverter.ValCurs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +38,9 @@ public class Fragment extends androidx.fragment.app.Fragment
     private static final String TAG_MINI_DIALOG = "miniDialog";
     private SharedPreferencesHelper mSharedPreferencesHelper;
     private Calculator calculator = new Calculator();
-    private List<Valute> listValutes = new ArrayList();
+    private List<Valute> mListValutes = new ArrayList();
+    private String[] mListValutesForSpinner = new String[mListValutes.size()];
+
     private TextView viewTitle;
     private Spinner viewLeftValuteSpinner;
     private TextView viewRightValute;
@@ -105,26 +117,29 @@ public class Fragment extends androidx.fragment.app.Fragment
     public void onResume() {
         super.onResume();
         initDB();
-        listValutes = mSharedPreferencesHelper.getValutes();
+//        mListValutes = mSharedPreferencesHelper.getValutes();
         buttonRefresh.setOnClickListener(refreshOnClickListener);
         buttonRoundCalculate.setOnClickListener(calculateOnClickListener);
         setUpViewElevation();
-        initLoader();
-        if (isLoaderStarted) {
-            loaderStartLoading();
-        }
-        if (listValutes.size() != 0) {
-            updateUI(listValutes);
-        }
-        setUpSpinner();
+//        initLoader();
+//        if (isLoaderStarted) {
+//            loaderStartLoading();
+//        }
+//        if (listValutes.size() != 0) {
+//            updateUI(listValutes);
+//        }
+        showDataFromRoomRecomendation();
+        getRXJAVA2ListValutes();
+//        setUpSpinner();
+
     }
 
 
     private void setUpSpinner() {
-        if (listValutes.size() > 10) {
-            String[] list = getSpinnerList(listValutes);
+        if (mListValutes.size() > 10) {
+            mListValutesForSpinner = getSpinnerList(mListValutes);
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                    getActivity(), android.R.layout.simple_selectable_list_item, list);
+                    getActivity(), android.R.layout.simple_selectable_list_item, mListValutesForSpinner);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             viewLeftValuteSpinner.setAdapter(adapter);
             viewLeftValuteSpinner.setSelection(positionSpinnerValute); //0-33
@@ -147,7 +162,7 @@ public class Fragment extends androidx.fragment.app.Fragment
         public void onClick(View view) {
             String userInput = viewLeftConverter.getText().toString();
             if (!userInput.equals("")) {
-                String newRightValue = calculator.calculate(listValutes, positionSpinnerValute, userInput);
+                String newRightValue = calculator.calculate(mListValutes, positionSpinnerValute, userInput);
                 viewRightConverter.setText(newRightValue);
             } else {
                 showDialog(DIALOG_INFO_CONVERTER);
@@ -166,8 +181,8 @@ public class Fragment extends androidx.fragment.app.Fragment
                 viewRightConverter.setText(userRightValue);
                 isAppTurn = false;
             } else {
-                viewLeftValue.setText(listValutes.get(i).getNominal());
-                viewRightValue.setText(listValutes.get(i).getValue().replace(",", "."));
+                viewLeftValue.setText(mListValutes.get(i).getNominal());
+                viewRightValue.setText(mListValutes.get(i).getValue().replace(",", "."));
                 viewLeftConverter.setText("");
                 viewLeftConverter.setHint("0");
                 viewRightConverter.setText("0");
@@ -202,11 +217,11 @@ public class Fragment extends androidx.fragment.app.Fragment
         if (!ifThereIsData(data) && !isAppTurn) {
             showDialog(DIALOG_ERROR_LOADING);
         } else if (ifThereIsData(data) && !isAppTurn) {
-            listValutes = data;
-            updateUI(listValutes);
+            mListValutes = data;
+//            updateUI(mListValutes);
             mSharedPreferencesHelper.saveValutes(data);
             showDialog(DIALOG_GOOD_LOADING);
-            updateDB(data);
+//            updateDB(data);
         }
         isLoaderStarted = false;
         isAppTurn = false;
@@ -228,9 +243,11 @@ public class Fragment extends androidx.fragment.app.Fragment
         loader.forceLoad();
     }
 
-    private void updateUI(List<Valute> list) {
+    private void updateUI(ExchangeValutes exchangeValutes) {
+        String date = exchangeValutes.getDate();
         positionSpinnerValute = mSharedPreferencesHelper.getPositionValute();
-        viewTitle.setText(TEXT_VIEW_TITLE + " " + list.get(positionSpinnerValute).getDate());
+//        viewTitle.setText(TEXT_VIEW_TITLE + " " + list.get(positionSpinnerValute).getDate());
+        viewTitle.setText(TEXT_VIEW_TITLE + " " + date);
         viewRightValute.setText(TEXT_RIGHT_VALUTE);
     }
 
@@ -297,6 +314,9 @@ public class Fragment extends androidx.fragment.app.Fragment
         outState.putString(KEY_USER_CALCULATE_RIGHT_VALUE, userRightValue);
     }
 
+
+    //------------------------------------------------------------------------------------
+
     ExchangeValutesDao exchangeValutesDao;
 
     private void initDB() {
@@ -306,54 +326,146 @@ public class Fragment extends androidx.fragment.app.Fragment
     }
 
 
-    private void updateDB(List<Valute> data) {
+    private void updateDB(ValCurs valCurs) {
+        mListValutes = valCurs.getListValutes();
         ExchangeValutes item = new ExchangeValutes();
-        item.setDate(data.get(1).getDate());
+        item.setDate(valCurs.getDate());
 
-
-        String s0 = data.get(0).getNominal() + "/" + data.get(0).getValue();
+        String s0 = mListValutes.get(0).getNominal() + "/" + mListValutes.get(0).getValue();
         item.setNumCode_036(s0);
-        String s1 = data.get(1).getNominal() + "/" + data.get(1).getValue();
+        String s1 = mListValutes.get(1).getNominal() + "/" + mListValutes.get(1).getValue();
         item.setNumCode_944(s1);
-        item.setNumCode_826(data.get(2).getNominal() + "/" + data.get(2).getValue());
-        item.setNumCode_051(data.get(3).getNominal() + "/" + data.get(3).getValue());
-        item.setNumCode_933(data.get(4).getNominal() + "/" + data.get(4).getValue());
-        item.setNumCode_975(data.get(5).getNominal() + "/" + data.get(5).getValue());
-        item.setNumCode_986(data.get(6).getNominal() + "/" + data.get(6).getValue());
-        item.setNumCode_348(data.get(7).getNominal() + "/" + data.get(7).getValue());
-        item.setNumCode_344(data.get(8).getNominal() + "/" + data.get(8).getValue());
-        item.setNumCode_208(data.get(9).getNominal() + "/" + data.get(9).getValue());
+        item.setNumCode_826(mListValutes.get(2).getNominal() + "/" + mListValutes.get(2).getValue());
+        item.setNumCode_051(mListValutes.get(3).getNominal() + "/" + mListValutes.get(3).getValue());
+        item.setNumCode_933(mListValutes.get(4).getNominal() + "/" + mListValutes.get(4).getValue());
+        item.setNumCode_975(mListValutes.get(5).getNominal() + "/" + mListValutes.get(5).getValue());
+        item.setNumCode_986(mListValutes.get(6).getNominal() + "/" + mListValutes.get(6).getValue());
+        item.setNumCode_348(mListValutes.get(7).getNominal() + "/" + mListValutes.get(7).getValue());
+        item.setNumCode_344(mListValutes.get(8).getNominal() + "/" + mListValutes.get(8).getValue());
+        item.setNumCode_208(mListValutes.get(9).getNominal() + "/" + mListValutes.get(9).getValue());
 
-        item.setNumCode_840(data.get(10).getNominal() + "/" + data.get(10).getValue());
-        item.setNumCode_978(data.get(11).getNominal() + "/" + data.get(11).getValue());
-        item.setNumCode_356(data.get(12).getNominal() + "/" + data.get(12).getValue());
-        item.setNumCode_398(data.get(13).getNominal() + "/" + data.get(13).getValue());
-        item.setNumCode_124(data.get(14).getNominal() + "/" + data.get(14).getValue());
-        item.setNumCode_417(data.get(15).getNominal() + "/" + data.get(15).getValue());
-        item.setNumCode_156(data.get(16).getNominal() + "/" + data.get(16).getValue());
-        item.setNumCode_498(data.get(17).getNominal() + "/" + data.get(17).getValue());
-        item.setNumCode_578(data.get(18).getNominal() + "/" + data.get(18).getValue());
-        item.setNumCode_985(data.get(19).getNominal() + "/" + data.get(19).getValue());
+        item.setNumCode_840(mListValutes.get(10).getNominal() + "/" + mListValutes.get(10).getValue());
+        item.setNumCode_978(mListValutes.get(11).getNominal() + "/" + mListValutes.get(11).getValue());
+        item.setNumCode_356(mListValutes.get(12).getNominal() + "/" + mListValutes.get(12).getValue());
+        item.setNumCode_398(mListValutes.get(13).getNominal() + "/" + mListValutes.get(13).getValue());
+        item.setNumCode_124(mListValutes.get(14).getNominal() + "/" + mListValutes.get(14).getValue());
+        item.setNumCode_417(mListValutes.get(15).getNominal() + "/" + mListValutes.get(15).getValue());
+        item.setNumCode_156(mListValutes.get(16).getNominal() + "/" + mListValutes.get(16).getValue());
+        item.setNumCode_498(mListValutes.get(17).getNominal() + "/" + mListValutes.get(17).getValue());
+        item.setNumCode_578(mListValutes.get(18).getNominal() + "/" + mListValutes.get(18).getValue());
+        item.setNumCode_985(mListValutes.get(19).getNominal() + "/" + mListValutes.get(19).getValue());
 
-        item.setNumCode_946(data.get(20).getNominal() + "/" + data.get(20).getValue());
-        item.setNumCode_960(data.get(21).getNominal() + "/" + data.get(21).getValue());
-        item.setNumCode_702(data.get(22).getNominal() + "/" + data.get(22).getValue());
-        item.setNumCode_972(data.get(23).getNominal() + "/" + data.get(23).getValue());
-        item.setNumCode_949(data.get(24).getNominal() + "/" + data.get(24).getValue());
-        item.setNumCode_934(data.get(25).getNominal() + "/" + data.get(25).getValue());
-        item.setNumCode_860(data.get(26).getNominal() + "/" + data.get(26).getValue());
-        item.setNumCode_980(data.get(27).getNominal() + "/" + data.get(27).getValue());
-        item.setNumCode_203(data.get(28).getNominal() + "/" + data.get(28).getValue());
+        item.setNumCode_946(mListValutes.get(20).getNominal() + "/" + mListValutes.get(20).getValue());
+        item.setNumCode_960(mListValutes.get(21).getNominal() + "/" + mListValutes.get(21).getValue());
+        item.setNumCode_702(mListValutes.get(22).getNominal() + "/" + mListValutes.get(22).getValue());
+        item.setNumCode_972(mListValutes.get(23).getNominal() + "/" + mListValutes.get(23).getValue());
+        item.setNumCode_949(mListValutes.get(24).getNominal() + "/" + mListValutes.get(24).getValue());
+        item.setNumCode_934(mListValutes.get(25).getNominal() + "/" + mListValutes.get(25).getValue());
+        item.setNumCode_860(mListValutes.get(26).getNominal() + "/" + mListValutes.get(26).getValue());
+        item.setNumCode_980(mListValutes.get(27).getNominal() + "/" + mListValutes.get(27).getValue());
+        item.setNumCode_203(mListValutes.get(28).getNominal() + "/" + mListValutes.get(28).getValue());
 
-        item.setNumCode_752(data.get(29).getNominal() + "/" + data.get(29).getValue());
+        item.setNumCode_752(mListValutes.get(29).getNominal() + "/" + mListValutes.get(29).getValue());
 
-        item.setNumCode_756(data.get(30).getNominal() + "/" + data.get(30).getValue());
-        item.setNumCode_710(data.get(31).getNominal() + "/" + data.get(31).getValue());
-        item.setNumCode_410(data.get(32).getNominal() + "/" + data.get(32).getValue());
-        item.setNumCode_392(data.get(33).getNominal() + "/" + data.get(33).getValue());
+        item.setNumCode_756(mListValutes.get(30).getNominal() + "/" + mListValutes.get(30).getValue());
+        item.setNumCode_710(mListValutes.get(31).getNominal() + "/" + mListValutes.get(31).getValue());
+        item.setNumCode_410(mListValutes.get(32).getNominal() + "/" + mListValutes.get(32).getValue());
+        item.setNumCode_392(mListValutes.get(33).getNominal() + "/" + mListValutes.get(33).getValue());
 
-        exchangeValutesDao.insertExchangeValutes(item);
+        insertDataToDb(item);
+    }
 
+    //------------------------------------------------------------------------------------
+    //--------------------------------------Rxjava2----------------------------------------------
+
+
+    CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        compositeDisposable.clear();
+    }
+
+    private void getRXJAVA2ListValutes() {
+        compositeDisposable.add(Client.getApiService()
+                .getAllValutes()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<ValCurs>() {
+                               @Override
+                               public void accept(ValCurs valCurs) throws Exception {
+                                   updateDB(valCurs);
+                                   Log.d(TAG, "get data from API successe");
+                               }
+                           }, new Consumer<Throwable>() {
+                               @Override
+                               public void accept(Throwable throwable) throws Exception {
+                                   Log.d(TAG, "--> FRAGMENT getRXJAVA2ListValutes: throwable=" + throwable);
+                                   showDialog(DIALOG_ERROR_LOADING);
+                               }
+                           }
+                )
+        );
+    }
+
+    private void insertDataToDb(ExchangeValutes list) {
+        compositeDisposable.add(exchangeValutesDao
+                .insertExchangeValutes(list)
+                .subscribeOn(Schedulers.single())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Log.d(TAG, "insert to db successe");
+                    }
+                }));
+    }
+
+
+    private void showDataFromRoomRecomendation() {
+
+        compositeDisposable.add(exchangeValutesDao
+                .getLastExchangeValutes()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<ExchangeValutes>() {
+                    @Override
+                    public void accept(ExchangeValutes valutes) throws Exception {
+                        convertExValutesToList(valutes);
+                        updateUI(valutes);
+                        setUpSpinner();
+                        Log.d(TAG, "load from db successe");
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+
+                    }
+                })
+        );
+
+    }
+
+    private void convertExValutesToList(ExchangeValutes exchangeValutes) throws JSONException {
+        Gson mGson = new Gson();
+        String jsonString = mGson.toJson(exchangeValutes);
+        JSONObject factJSONObject = new JSONObject(jsonString);
+        List<Valute> items = new ArrayList<>();
+        for (int i = 0; i < mListValutes.size(); i++) {
+            Valute item = new Valute();
+            item.setNumCode(mListValutes.get(i).getNumCode());
+            item.setCharCode(mListValutes.get(i).getCharCode());
+            item.setDate(factJSONObject.getString("date"));
+            item.setName(mListValutes.get(i).getName());
+            String fieldName = "numCode_" + mListValutes.get(i).getNumCode();
+            String fieldValue = factJSONObject.getString(fieldName);
+            String[] output = fieldValue.split("/");
+            item.setNominal(output[0]);
+            item.setValue(output[1]);
+            items.add(item);
+        }
+        mListValutes = items;
     }
 
 

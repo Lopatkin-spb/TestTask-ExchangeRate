@@ -13,10 +13,11 @@ import java.util.List;
 public interface ExchangeValutesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertExchangeValutes(ExchangeValutes valutes);
+    Completable insertExchangeValutes(ExchangeValutes valutes);
 
-    @Query("select * from table_exchange_valutes")
-    List<ExchangeValutes> getExchangeValutes();
+    @Query("select * from table_exchange_valutes ORDER BY date DESC LIMIT 1")
+//    @Query("select * from table_exchange_valutes ORDER BY date ASC LIMIT 1")
+    Flowable<ExchangeValutes> getLastExchangeValutes();
 
     @Query("delete from table_exchange_valutes")
     void deleteAllExchangeValutes();
