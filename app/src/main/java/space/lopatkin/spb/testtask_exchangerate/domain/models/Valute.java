@@ -1,11 +1,15 @@
-package space.lopatkin.spb.testtask_exchangerate.db;
+package space.lopatkin.spb.testtask_exchangerate.domain.models;
 
 
+import android.os.Parcelable;
 import org.simpleframework.xml.*;
 
-@Root(name = "Valute",strict = false)
-public class Valute {
+import java.io.Serializable;
 
+@Root(name = "Valute",strict = false)
+public class Valute implements Serializable {
+
+    //поля (Root, ElementList) для xmlConvertera
     @Element(name = "NumCode")
     private String numCode;
     @Element(name = "CharCode")

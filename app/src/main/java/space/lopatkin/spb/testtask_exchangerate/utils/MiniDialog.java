@@ -6,9 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.fragment.app.DialogFragment;
-import space.lopatkin.spb.testtask_exchangerate.R;
 
 import static space.lopatkin.spb.testtask_exchangerate.MainActivity.DIALOG_BUTTON_NEGATIVE;
 

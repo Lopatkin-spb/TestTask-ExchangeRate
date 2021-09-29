@@ -4,11 +4,25 @@
 
     <string name="dialog_no_internet">Подключение к интернету отсутствует!</string>
     <string name="dialog_button_retry">Повторить.</string>
-    <string name="dialog_error_loading">Ошибка загрузки.</string>
+    <string name="dialog_error_loading">Ошибка обновления.</string>
     <string name="dialog_good_loading">Данные успешно обновлены.</string>
     <string name="dialog_info_spinner">Обновите данные и слева выберите нужную валюту.</string>
     <string name="dialog_info_converter">Введите число.</string>
     <string name="dialog_button_negative">Закрыть.</string>
+    <string name="dialog_state_error_load_and_default">Данные в бд не найдены.
+        Сделайте принудительную загрузку после исправления неисправности.</string>
+    <string name="dialog_state_loading">Загрузка данных из бд...</string>
+
+    <string name="toast_good_update_good_insert">Обновление данных произошло успешно, бд обновлена.</string>
+    <string name="toast_good_update_error_insert">Обновление данных произошло успешно,
+        но ошибка в обновлении бд.</string>
+
+    <string name="dialog_state_error_update">Произошла ошибка загрузки с сайта.
+        Производится загрузка из бд.</string>
+    <string name="dialog_state_update">Обновление...</string>
+    <string name="dialog_state_normal">Приложение готово к работе.
+    Выберите слева нужную валюту.
+        Инфо кнопок добавится при следующих обновлениях.</string>
 
     <string name="text_title">Курс валют ЦБРФ</string>
     <string name="text_right_valute">Российский рубль (RUB)</string>

@@ -1,13 +1,13 @@
 package space.lopatkin.spb.testtask_exchangerate.utils;
 
 import android.util.Log;
-import space.lopatkin.spb.testtask_exchangerate.db.Valute;
+import space.lopatkin.spb.testtask_exchangerate.domain.models.Valute;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.List;
 
-import static space.lopatkin.spb.testtask_exchangerate.MainActivity.TAG;
+import static space.lopatkin.spb.testtask_exchangerate.MainActivity.TAG_MY_LOGS;
 
 public class Calculator {
 
@@ -31,7 +31,7 @@ public class Calculator {
             doubleNumber = decimalFormat.parse(stringNumber).doubleValue();
         } catch (NumberFormatException | ParseException e) {
             e.printStackTrace();
-            Log.d(TAG, "--------------- error");
+            Log.d(TAG_MY_LOGS, "--------------- error");
         }
         return doubleNumber;
     }
@@ -44,7 +44,7 @@ public class Calculator {
             stringNumber = decimalFormat.format(doubleNumber);
         } catch (NumberFormatException e) {
             e.printStackTrace();
-            Log.d(TAG, "--------------- error");
+            Log.d(TAG_MY_LOGS, "--------------- error");
         }
         return stringNumber;
     }

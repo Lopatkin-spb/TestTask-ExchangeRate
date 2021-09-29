@@ -1,4 +1,4 @@
-package space.lopatkin.spb.testtask_exchangerate.db;
+package space.lopatkin.spb.testtask_exchangerate.data.db;
 
 import android.app.Application;
 import androidx.room.Room;

@@ -6,9 +6,8 @@ import android.os.Bundle;
 //import android.support.v4.;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import space.lopatkin.spb.testtask_exchangerate.ui.Fragment;
+import space.lopatkin.spb.testtask_exchangerate.presentation.ui.Fragment;
 import space.lopatkin.spb.testtask_exchangerate.utils.NetworkReceiver;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,12 +17,20 @@ public class MainActivity extends AppCompatActivity {
     // доработать текстовые вью
 
     public static final String http = "http://www.cbr.ru/scripts/XML_daily.asp";
-    public static final String TAG = "myLogs";
+    public static final String TAG_MY_LOGS = "myLogs";
     public static final int DIALOG_NO_INTERNET = R.string.dialog_no_internet;
     public static final int DIALOG_ERROR_LOADING = R.string.dialog_error_loading;
     public static final int DIALOG_GOOD_LOADING = R.string.dialog_good_loading;
     public static final int DIALOG_INFO_SPINNER = R.string.dialog_info_spinner;
     public static final int DIALOG_INFO_CONVERTER = R.string.dialog_info_converter;
+    public static final int DIALOG_ERROR_LOAD = R.string.dialog_state_error_load_and_default;
+    public static final int TOAST_LOADING = R.string.dialog_state_loading;
+    public static final int TOAST_ERROR_UPDATE = R.string.dialog_state_error_update;
+    public static final int TOAST_GOOD_UPDATE_GOOD_INSERT = R.string.toast_good_update_good_insert;
+    public static final int TOAST_GOOD_UPDATE_ERROR_INSERT = R.string.toast_good_update_error_insert;
+
+    public static final int TOAST_UPDATE = R.string.dialog_state_update;
+    public static final int DIALOG_GOOD_LOAD = R.string.dialog_state_normal;
 
 
     public static final int DIALOG_BUTTON_NEGATIVE = R.string.dialog_button_negative;
@@ -50,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main_activity);
 
         if (savedInstanceState == null) {
+//            Fragment fragment = new Fragment();
+
 
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
