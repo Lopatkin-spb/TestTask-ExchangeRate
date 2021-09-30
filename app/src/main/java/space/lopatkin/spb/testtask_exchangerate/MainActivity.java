@@ -14,7 +14,6 @@ public class MainActivity extends AppCompatActivity {
 
     // залогировать ошибки- обработать
     //вывести статистику изменения выбранной валюты на другом фрагменте
-    // доработать текстовые вью
 
     public static final String http = "http://www.cbr.ru/scripts/XML_daily.asp";
     public static final String TAG_MY_LOGS = "myLogs";
@@ -23,22 +22,17 @@ public class MainActivity extends AppCompatActivity {
     public static final int DIALOG_GOOD_LOADING = R.string.dialog_good_loading;
     public static final int DIALOG_INFO_SPINNER = R.string.dialog_info_spinner;
     public static final int DIALOG_INFO_CONVERTER = R.string.dialog_info_converter;
-    public static final int DIALOG_ERROR_LOAD = R.string.dialog_state_error_load_and_default;
-    public static final int TOAST_LOADING = R.string.dialog_state_loading;
-    public static final int TOAST_ERROR_UPDATE = R.string.dialog_state_error_update;
-    public static final int TOAST_GOOD_UPDATE_GOOD_INSERT = R.string.toast_good_update_good_insert;
-    public static final int TOAST_GOOD_UPDATE_ERROR_INSERT = R.string.toast_good_update_error_insert;
-
-    public static final int TOAST_UPDATE = R.string.dialog_state_update;
-    public static final int DIALOG_GOOD_LOAD = R.string.dialog_state_normal;
-
-
+    public static final int ERROR_LOAD = R.string.dialog_state_error_load_and_default;
+    public static final int LOADING = R.string.dialog_state_loading;
+    public static final int ERROR_UPDATE = R.string.dialog_state_error_update;
+    public static final int GOOD_UPDATE_GOOD_INSERT = R.string.toast_good_update_good_insert;
+    public static final int GOOD_UPDATE_ERROR_INSERT = R.string.toast_good_update_error_insert;
+    public static final int UPDATE = R.string.dialog_state_update;
+    public static final int GOOD_LOAD = R.string.dialog_state_normal;
     public static final int DIALOG_BUTTON_NEGATIVE = R.string.dialog_button_negative;
-
 
     public static final String TEXT_VIEW_TITLE = "Курс валют ЦБРФ"; //почемуто инт ссылка на стринговый ресурс отображает цифры, а не предложение
     public static final int TEXT_RIGHT_VALUTE = R.string.text_right_valute;
-
 
     public static final String KEY_IS_APP_TURN = "isTurn";
     public static final String KEY_IS_LOADER_STARTED = "isLoaderStarted";

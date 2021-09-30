@@ -4,8 +4,6 @@ package space.lopatkin.spb.testtask_exchangerate.presentation.ui;
 import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static space.lopatkin.spb.testtask_exchangerate.MainActivity.*;
-import static space.lopatkin.spb.testtask_exchangerate.MainActivity.TAG_MY_LOGS;
 
 public class ExchangeValutesViewModel extends ViewModel {
 
@@ -49,38 +46,40 @@ public class ExchangeValutesViewModel extends ViewModel {
 
     private final ExchangeValutesDataSource mDataSource;
     private MutableLiveData<States> mState;
+    private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
     private List<Valute> mListValutes = new ArrayList();
     private ExchangeValutes mItemApi = new ExchangeValutes();
     private ExchangeValutes mItemDb = new ExchangeValutes();
 
-    private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+    private int mCountOffError = 0;
+    private boolean mToast = true;
+    private boolean mDialog = false;
 
-    private int countOffError = 0;
+    private int mTime = 5;
+    private int mTimeThread1 = 5000;
+    private int mTimeThread2 = 3000;
 
 
     public ExchangeValutesViewModel(ExchangeValutesDataSource dataSource) {
         mDataSource = dataSource;
-
         if (mState == null) {
             mState = new MutableLiveData<>();
         }
-
         update();
-
     }
 
     public void update() {
-        States.MESSAGE.setText(TOAST_UPDATE);
-        States.MESSAGE.setToast(true);
+        States.MESSAGE.setText(UPDATE);
+        States.MESSAGE.setView(mToast);
         mState.setValue(States.MESSAGE);
         mCompositeDisposable.add(Client.getApiService()
                 .getAllValutes()
-                .timeout(5, TimeUnit.SECONDS)
+                .timeout(mTime, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
-                        Thread.sleep(5000);
+                        Thread.sleep(mTimeThread1);
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -101,8 +100,8 @@ public class ExchangeValutesViewModel extends ViewModel {
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
-                        States.MESSAGE.setText(TOAST_ERROR_UPDATE);
-                        States.MESSAGE.setToast(true);
+                        States.MESSAGE.setText(ERROR_UPDATE);
+                        States.MESSAGE.setView(mToast);
                         mState.setValue(States.MESSAGE);
                     }
                 })
@@ -185,18 +184,16 @@ public class ExchangeValutesViewModel extends ViewModel {
                                @Override
                                public void run() throws Exception {
                                    Log.d(TAG_MY_LOGS, "insert to db success");
-
-
-                                   States.MESSAGE.setText(TOAST_GOOD_UPDATE_GOOD_INSERT);
-                                   States.MESSAGE.setToast(true);
+                                   States.MESSAGE.setText(GOOD_UPDATE_GOOD_INSERT);
+                                   States.MESSAGE.setView(mToast);
                                    mState.setValue(States.MESSAGE);
                                }
                            }, new Consumer<Throwable>() {
                                @Override
                                public void accept(Throwable throwable) throws Exception {
                                    Log.d(TAG_MY_LOGS, "Unable to insert ExchangeValutes to db", throwable);
-                                   States.MESSAGE.setText(TOAST_GOOD_UPDATE_ERROR_INSERT);
-                                   States.MESSAGE.setToast(true);
+                                   States.MESSAGE.setText(GOOD_UPDATE_ERROR_INSERT);
+                                   States.MESSAGE.setView(mToast);
                                    mState.setValue(States.MESSAGE);
                                }
                            }
@@ -252,8 +249,8 @@ public class ExchangeValutesViewModel extends ViewModel {
                 .doOnSubscribe(new Consumer<Subscription>() {
                     @Override
                     public void accept(Subscription subscription) throws Exception {
-                        Thread.sleep(3000);
-                        mState.setValue(States.MESSAGE); //для теста ошибки временно
+                        Thread.sleep(mTimeThread2);
+//                        mState.setValue(States.MESSAGE); //для теста ошибки временно
                     }
                 })
                 .subscribeOn(Schedulers.io())
@@ -263,18 +260,18 @@ public class ExchangeValutesViewModel extends ViewModel {
                     @Override
                     public void accept(ExchangeValutes exchangeValutes) throws Exception {
                         //показ ЛОАДИНГ при САКСЕСС
-                        States.MESSAGE.setText(TOAST_LOADING);
-                        States.MESSAGE.setToast(true);
+                        States.MESSAGE.setText(LOADING);
+                        States.MESSAGE.setView(mToast);
                         mState.setValue(States.MESSAGE);
                     }
                 })
                 .doOnError(new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
-                        if (countOffError == 0) {
-                            countOffError++;
-                            States.MESSAGE.setText(TOAST_LOADING);
-                            States.MESSAGE.setToast(true);
+                        if (mCountOffError == 0) {
+                            mCountOffError++;
+                            States.MESSAGE.setText(LOADING);
+                            States.MESSAGE.setView(mToast);
                             mState.setValue(States.MESSAGE);
                         }
                     }
@@ -283,7 +280,7 @@ public class ExchangeValutesViewModel extends ViewModel {
                 .doOnNext(new Consumer<ExchangeValutes>() {
                     @Override
                     public void accept(ExchangeValutes exchangeValutes) throws Exception {
-                        Thread.sleep(5000);
+                        Thread.sleep(mTimeThread1);
                     }
                 })
                 //запуск заново при ошибке и показ ЛОАДИНГ
@@ -293,12 +290,9 @@ public class ExchangeValutesViewModel extends ViewModel {
                 .subscribe(new Consumer<ExchangeValutes>() {
                                @Override
                                public void accept(ExchangeValutes valutes) throws Exception {
-
                                    Log.d(TAG_MY_LOGS, "--> VIEWMODEL getDataFromDb: valutes=" + valutes);
-
-
-                                   States.MESSAGE.setText(DIALOG_GOOD_LOAD);
-                                   States.MESSAGE.setToast(false);
+                                   States.MESSAGE.setText(GOOD_LOAD);
+                                   States.MESSAGE.setView(mDialog);
                                    mState.setValue(States.MESSAGE);
                                    States.NORMAL_VIEW.setData(valutes);
                                    mState.setValue(States.NORMAL_VIEW);
@@ -306,12 +300,12 @@ public class ExchangeValutesViewModel extends ViewModel {
                            }, new Consumer<Throwable>() {
                                @Override
                                public void accept(Throwable throwable) throws Exception {
-                                   States.MESSAGE.setText(DIALOG_ERROR_LOAD);
-                                   States.MESSAGE.setToast(false);
+                                   States.MESSAGE.setText(ERROR_LOAD);
+                                   States.MESSAGE.setView(mDialog);
                                    mState.setValue(States.MESSAGE);
                                    mState.setValue(States.DEFAULT_VIEW);
-                                   if (countOffError == 1) {
-                                       countOffError = 0;
+                                   if (mCountOffError == 1) {
+                                       mCountOffError = 0;
                                    }
                                }
                            }
@@ -325,7 +319,6 @@ public class ExchangeValutesViewModel extends ViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        Log.d(TAG_MY_LOGS, "--> VIEWMODEL onCleared");
         mCompositeDisposable.clear();
     }
 

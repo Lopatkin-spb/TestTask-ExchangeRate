@@ -4,37 +4,38 @@ import space.lopatkin.spb.testtask_exchangerate.utils.stateMachine.States;
 
 public class StateMessage implements States {
 
-    private int text;
-    private boolean toast;
+    private int mText;
+    private boolean mView;
 
 
     public StateMessage() {
     }
 
     public StateMessage(int text) {
-        this.text = text;
+        this.mText = text;
     }
 
     public int getText() {
-        return text;
+        return mText;
     }
 
     public void setText(int statusStates) {
-        this.text = statusStates;
+        this.mText = statusStates;
     }
 
     public boolean isToast() {
-        return toast;
+        return mView;
     }
 
-    public void setToast(boolean toast) {
-        this.toast = toast;
+    public void setView(boolean toast) {
+        this.mView = toast;
     }
 
     @Override
     public String toString() {
         return "StateMessage{" +
-                "text='" + text + '\'' +
+                "text=" + mText +
+                ", view=" + mView +
                 '}';
     }
 }
