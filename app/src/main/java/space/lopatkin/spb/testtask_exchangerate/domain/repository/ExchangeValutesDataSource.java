@@ -1,7 +1,8 @@
-package space.lopatkin.spb.testtask_exchangerate;
+package space.lopatkin.spb.testtask_exchangerate.domain.repository;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import space.lopatkin.spb.testtask_exchangerate.data.db.Dates;
 import space.lopatkin.spb.testtask_exchangerate.data.db.ExchangeValutes;
 
@@ -13,12 +14,9 @@ public interface ExchangeValutesDataSource {
 
     Completable insertExchangeValutes(ExchangeValutes valutes);
 
-    Flowable<ExchangeValutes> getLastExchangeValutes();
+    Single<ExchangeValutes> getLastExchangeValutes();
 
     Completable deleteAllExchangeValutes();
-
-
-    //-----------------------------------------------------------------------
 
     Flowable<List<Dates>> getAllDates();
 

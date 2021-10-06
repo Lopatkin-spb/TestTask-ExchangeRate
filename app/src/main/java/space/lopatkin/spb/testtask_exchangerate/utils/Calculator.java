@@ -1,7 +1,7 @@
 package space.lopatkin.spb.testtask_exchangerate.utils;
 
 import android.util.Log;
-import space.lopatkin.spb.testtask_exchangerate.domain.models.Valute;
+import space.lopatkin.spb.testtask_exchangerate.utils.xvlConverter.Valute;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;

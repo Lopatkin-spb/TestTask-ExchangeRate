@@ -3,7 +3,7 @@ package space.lopatkin.spb.testtask_exchangerate.presentation;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-import space.lopatkin.spb.testtask_exchangerate.ExchangeValutesDataSource;
+import space.lopatkin.spb.testtask_exchangerate.domain.repository.ExchangeValutesDataSource;
 import space.lopatkin.spb.testtask_exchangerate.presentation.ui.ExchangeValutesViewModel;
 
 public class ViewModelFactory implements ViewModelProvider.Factory {

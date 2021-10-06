@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-import space.lopatkin.spb.testtask_exchangerate.utils.stateMachine.States;
 
 @Entity(tableName = "table_exchange_valutes")
 public class ExchangeValutes  {
@@ -135,7 +134,6 @@ public class ExchangeValutes  {
         this.valute34 = valute34;
     }
 
-//    @Ignore //временно для проверки
 
     public ExchangeValutes(int id, String date, String valute1, String valute2, String valute3, String valute4, String valute5, String valute6, String valute7, String valute8, String valute9, String valute10, String valute11, String valute12, String valute13, String valute14, String valute15, String valute16, String valute17, String valute18, String valute19, String valute20, String valute21, String valute22, String valute23, String valute24, String valute25, String valute26, String valute27, String valute28, String valute29, String valute30, String valute31, String valute32, String valute33, String valute34) {
         this.id = id;

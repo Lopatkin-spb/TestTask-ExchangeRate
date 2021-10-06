@@ -1,10 +1,10 @@
-package space.lopatkin.spb.testtask_exchangerate.utils.xmlConverter;
+package space.lopatkin.spb.testtask_exchangerate.domain.models;
 
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
-import space.lopatkin.spb.testtask_exchangerate.domain.models.Valute;
+import space.lopatkin.spb.testtask_exchangerate.utils.xvlConverter.Valute;
 
 import java.util.ArrayList;
 import java.util.List;

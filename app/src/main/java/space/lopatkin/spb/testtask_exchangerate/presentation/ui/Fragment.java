@@ -16,7 +16,7 @@ import space.lopatkin.spb.testtask_exchangerate.Injection;
 import space.lopatkin.spb.testtask_exchangerate.R;
 import space.lopatkin.spb.testtask_exchangerate.presentation.ViewModelFactory;
 import space.lopatkin.spb.testtask_exchangerate.data.db.ExchangeValutes;
-import space.lopatkin.spb.testtask_exchangerate.domain.models.Valute;
+import space.lopatkin.spb.testtask_exchangerate.utils.xvlConverter.Valute;
 import space.lopatkin.spb.testtask_exchangerate.utils.*;
 import space.lopatkin.spb.testtask_exchangerate.utils.stateMachine.States;
 
@@ -29,7 +29,7 @@ public class Fragment extends androidx.fragment.app.Fragment {
 
     //внедрить чистую архитектуру
     //внедрить МВП
-    //рид ми добавить
+    //рид ми добавить +
     //собрать файл
     //выложить в инет прогу
     //разобраться да конца с поворотами - изучить стэйты (done)
@@ -38,7 +38,6 @@ public class Fragment extends androidx.fragment.app.Fragment {
     //разобраться в работе спинера - включается по два раза (future)
     //оптимизировать взаимодействие рхДжава с Апи и Роом (future)
 
-    //readme сделать
     //начать клин архитекчур
 
     private static final String TAG_MINI_DIALOG = "miniDialog";
@@ -170,7 +169,7 @@ public class Fragment extends androidx.fragment.app.Fragment {
 
     private void setStateView() throws InterruptedException {
 
-        mViewModel.getSavedStateData().observe(getViewLifecycleOwner(), new Observer<States>() {
+        mViewModel.getState().observe(getViewLifecycleOwner(), new Observer<States>() {
             @Override
             public void onChanged(States states) {
                 if (states == States.MESSAGE) {

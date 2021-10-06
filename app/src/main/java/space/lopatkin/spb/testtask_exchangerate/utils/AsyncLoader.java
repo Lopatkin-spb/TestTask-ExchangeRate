@@ -1,18 +1,5 @@
 package space.lopatkin.spb.testtask_exchangerate.utils;
 
-import android.content.Context;
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.loader.content.AsyncTaskLoader;
-import org.xmlpull.v1.XmlPullParserException;
-import space.lopatkin.spb.testtask_exchangerate.MainActivity;
-import space.lopatkin.spb.testtask_exchangerate.domain.models.Valute;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 //public class AsyncLoader extends AsyncTaskLoader<List<Valute>> {
 //    private Network network = new Network();
 //    private List<Valute> mData;

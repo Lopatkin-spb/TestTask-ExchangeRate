@@ -3,6 +3,8 @@ package space.lopatkin.spb.testtask_exchangerate;
 import android.content.Context;
 import space.lopatkin.spb.testtask_exchangerate.data.db.AppDelegate;
 import space.lopatkin.spb.testtask_exchangerate.data.db.ExchangeValutesDao;
+import space.lopatkin.spb.testtask_exchangerate.data.repository.LocalExchangeValutesDataSource;
+import space.lopatkin.spb.testtask_exchangerate.domain.repository.ExchangeValutesDataSource;
 import space.lopatkin.spb.testtask_exchangerate.presentation.ViewModelFactory;
 
 public class Injection {

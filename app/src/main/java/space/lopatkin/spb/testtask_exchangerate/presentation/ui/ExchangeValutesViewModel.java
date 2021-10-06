@@ -4,20 +4,23 @@ package space.lopatkin.spb.testtask_exchangerate.presentation.ui;
 import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import io.reactivex.*;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.BiConsumer;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
-import org.reactivestreams.Subscription;
-import space.lopatkin.spb.testtask_exchangerate.ExchangeValutesDataSource;
+import space.lopatkin.spb.testtask_exchangerate.domain.repository.ExchangeValutesDataSource;
 import space.lopatkin.spb.testtask_exchangerate.data.db.Dates;
 import space.lopatkin.spb.testtask_exchangerate.data.db.ExchangeValutes;
-import space.lopatkin.spb.testtask_exchangerate.domain.models.Valute;
+import space.lopatkin.spb.testtask_exchangerate.utils.xvlConverter.Valute;
 import space.lopatkin.spb.testtask_exchangerate.utils.Client;
 import space.lopatkin.spb.testtask_exchangerate.utils.stateMachine.States;
-import space.lopatkin.spb.testtask_exchangerate.utils.xmlConverter.ValCurs;
+import space.lopatkin.spb.testtask_exchangerate.domain.models.ValCurs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +51,10 @@ public class ExchangeValutesViewModel extends ViewModel {
     private MutableLiveData<States> mState;
     private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
     private List<Valute> mListValutes = new ArrayList();
-    private ExchangeValutes mItemApi = new ExchangeValutes();
-    private ExchangeValutes mItemDb = new ExchangeValutes();
+    private final ExchangeValutes mItemApi = new ExchangeValutes();
 
-    private int mCountOffError = 0;
     private boolean mToast = true;
     private boolean mDialog = false;
-
-    private int mTime = 5;
-    private int mTimeThread1 = 5000;
-    private int mTimeThread2 = 3000;
 
 
     public ExchangeValutesViewModel(ExchangeValutesDataSource dataSource) {
@@ -74,12 +71,12 @@ public class ExchangeValutesViewModel extends ViewModel {
         mState.setValue(States.MESSAGE);
         mCompositeDisposable.add(Client.getApiService()
                 .getAllValutes()
-                .timeout(mTime, TimeUnit.SECONDS)
+                .timeout(4, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
-                        Thread.sleep(mTimeThread1);
+                        Thread.sleep(7000);
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -94,12 +91,13 @@ public class ExchangeValutesViewModel extends ViewModel {
                     @Override
                     public void accept(ValCurs valCurs) throws Exception {
                         //тут происходит импорт в бд
+                        Log.d(TAG_MY_LOGS, "Update from API success.");
                         updateDB(valCurs);
-
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
+                        Log.d(TAG_MY_LOGS, "Unable to get data from API.", throwable);
                         States.MESSAGE.setText(ERROR_UPDATE);
                         States.MESSAGE.setView(mToast);
                         mState.setValue(States.MESSAGE);
@@ -114,6 +112,8 @@ public class ExchangeValutesViewModel extends ViewModel {
 
         mListValutes.clear();
         mListValutes = valCurs.getListValutes();
+
+        mItemApi.setId(1);
         mItemApi.setDate(valCurs.getDate());
 
         mItemApi.setValute1(mListValutes.get(0).getNumCode() + "/" + mListValutes.get(0).getCharCode() + "/" + mListValutes.get(0).getNominal() + "/" + mListValutes.get(0).getName() + "/" + mListValutes.get(0).getValue());
@@ -154,36 +154,44 @@ public class ExchangeValutesViewModel extends ViewModel {
         mItemApi.setValute33(mListValutes.get(32).getNumCode() + "/" + mListValutes.get(32).getCharCode() + "/" + mListValutes.get(32).getNominal() + "/" + mListValutes.get(32).getName() + "/" + mListValutes.get(32).getValue());
         mItemApi.setValute34(mListValutes.get(33).getNumCode() + "/" + mListValutes.get(33).getCharCode() + "/" + mListValutes.get(33).getNominal() + "/" + mListValutes.get(33).getName() + "/" + mListValutes.get(33).getValue());
 
-
-        getItemDbForValid();
-        if (mItemApi.getDate().equals(mItemDb.getDate())) {
-            mItemApi.setId(mItemDb.getId());
-            Log.d(TAG_MY_LOGS, "--> VIEWMODEL itemApi equals itemDb");
-
-        } else if (!mItemApi.getDate().equals(mItemDb.getDate())) {
-            mItemApi.setId(mItemDb.getId() + 1);
-            Log.d(TAG_MY_LOGS, "--> VIEWMODEL itemApi !equals itemDb");
-
-        } else if (mItemDb.getDate() == null) {
-            mItemApi.setId(1);
-            Log.d(TAG_MY_LOGS, "--> VIEWMODEL itemApi new");
-
-        }
-        insertDataToDb(mItemApi);
-        Log.d(TAG_MY_LOGS, "--> VIEWMODEL itemApi=" + mItemApi);
+//        getListIdAndDateFromDb();
+        insertDataToDbMain(mItemApi);
     }
 
-
-    private void insertDataToDb(ExchangeValutes exchangeValutes) {
-
-        mCompositeDisposable.add(mDataSource
-                .insertExchangeValutes(exchangeValutes)
-                .subscribeOn(Schedulers.single())
+    private void insertDataToDbMain(ExchangeValutes in) {
+        mCompositeDisposable.add(dataFromDb()
+                .delaySubscription(2, TimeUnit.SECONDS)
+                .map(new Function<ExchangeValutes, ExchangeValutes>() {
+                    @Override
+                    public ExchangeValutes apply(@NonNull ExchangeValutes exchangeValutes) {
+                        if (in.getDate().equals(exchangeValutes.getDate())) {
+                            in.setId(exchangeValutes.getId());
+                        } else if (!in.getDate().equals(exchangeValutes.getDate())) {
+                            in.setId(exchangeValutes.getId() + 1);
+                        } else if (in.getDate() == null) {
+                            in.setId(1);
+                        }
+                        return in;
+                    }
+                })
+                .ignoreElement()
+                //переключение потока для отредактированных данных
+                .concatWith(dataInserteDb(in))
+                .onErrorResumeNext(new Function<Throwable, CompletableSource>() {
+                    @Override
+                    public CompletableSource apply(@NonNull Throwable throwable) throws Exception {
+                        //(если нет записей в бд - ошибка)
+                        // при ошибке включение потока заново без редактирования данных
+                        return dataInserteDb(in);
+                    }
+                })
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+
                 .subscribe(new Action() {
                                @Override
                                public void run() throws Exception {
-                                   Log.d(TAG_MY_LOGS, "insert to db success");
+                                   Log.d(TAG_MY_LOGS, "Insert to db success.");
                                    States.MESSAGE.setText(GOOD_UPDATE_GOOD_INSERT);
                                    States.MESSAGE.setView(mToast);
                                    mState.setValue(States.MESSAGE);
@@ -191,16 +199,63 @@ public class ExchangeValutesViewModel extends ViewModel {
                            }, new Consumer<Throwable>() {
                                @Override
                                public void accept(Throwable throwable) throws Exception {
-                                   Log.d(TAG_MY_LOGS, "Unable to insert ExchangeValutes to db", throwable);
+                                   Log.d(TAG_MY_LOGS, "Unable to insert ExchangeValutes to db.", throwable);
                                    States.MESSAGE.setText(GOOD_UPDATE_ERROR_INSERT);
                                    States.MESSAGE.setView(mToast);
                                    mState.setValue(States.MESSAGE);
                                }
                            }
                 ));
+
+
     }
 
-    private void getItemDbForValid() {
+    private void getDataFromDb() {
+        mCompositeDisposable.add(mDataSource
+                .getLastExchangeValutes()
+                .delaySubscription(5, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnEvent(new BiConsumer<ExchangeValutes, Throwable>() {
+                    @Override
+                    public void accept(ExchangeValutes exchangeValutes, Throwable throwable) throws Exception {
+//                        //показ ЛОАДИНГ
+                        States.MESSAGE.setText(LOADING);
+                        States.MESSAGE.setView(mToast);
+                        mState.setValue(States.MESSAGE);
+                    }
+                })
+                .observeOn(Schedulers.io())
+                .doOnEvent(new BiConsumer<ExchangeValutes, Throwable>() {
+                    @Override
+                    public void accept(ExchangeValutes exchangeValutes, Throwable throwable) throws Exception {
+                        Thread.sleep(3000);
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<ExchangeValutes>() {
+                               @Override
+                               public void accept(ExchangeValutes valutes) throws Exception {
+                                   Log.d(TAG_MY_LOGS, "Get data from db success.");
+                                   States.MESSAGE.setText(GOOD_LOAD);
+                                   States.MESSAGE.setView(mDialog);
+                                   mState.setValue(States.MESSAGE);
+                                   States.NORMAL_VIEW.setData(valutes);
+                                   mState.setValue(States.NORMAL_VIEW);
+                               }
+                           }, new Consumer<Throwable>() {
+                               @Override
+                               public void accept(Throwable throwable) throws Exception {
+                                   Log.d(TAG_MY_LOGS, "Unable to get data from db.", throwable);
+                                   States.MESSAGE.setText(ERROR_LOAD);
+                                   States.MESSAGE.setView(mDialog);
+                                   mState.setValue(States.MESSAGE);
+                                   mState.setValue(States.DEFAULT_VIEW);
+                               }
+                           }
+                ));
+    }
+
+    private void getListIdAndDateFromDb() {
         mCompositeDisposable.add(mDataSource
                 .getAllDates()
                 .subscribeOn(Schedulers.single())
@@ -213,106 +268,13 @@ public class ExchangeValutesViewModel extends ViewModel {
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
-                        Log.d(TAG_MY_LOGS, "--> VIEWMODEL test: error");
-
+                        Log.d(TAG_MY_LOGS, "--> VIEWMODEL test: error", throwable);
                     }
                 }));
 
-
-        mCompositeDisposable.add(mDataSource
-                .getLastExchangeValutes()
-                .subscribeOn(Schedulers.single())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<ExchangeValutes>() {
-                               @Override
-                               public void accept(ExchangeValutes exchangeValutes) throws Exception {
-                                   mItemDb = exchangeValutes;
-                                   Log.d(TAG_MY_LOGS, "--> VIEWMODEL itemDb=" + mItemDb);
-                               }
-                           }, new Consumer<Throwable>() {
-                               @Override
-                               public void accept(Throwable throwable) throws Exception {
-                                   Log.d(TAG_MY_LOGS, "error get itemDb");
-
-                               }
-                           }
-                )
-        );
-
-
     }
 
-
-    private void getDataFromDb() {
-        mCompositeDisposable.add(mDataSource
-                .getLastExchangeValutes()
-                .doOnSubscribe(new Consumer<Subscription>() {
-                    @Override
-                    public void accept(Subscription subscription) throws Exception {
-                        Thread.sleep(mTimeThread2);
-//                        mState.setValue(States.MESSAGE); //для теста ошибки временно
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-
-                .doOnNext(new Consumer<ExchangeValutes>() {
-                    @Override
-                    public void accept(ExchangeValutes exchangeValutes) throws Exception {
-                        //показ ЛОАДИНГ при САКСЕСС
-                        States.MESSAGE.setText(LOADING);
-                        States.MESSAGE.setView(mToast);
-                        mState.setValue(States.MESSAGE);
-                    }
-                })
-                .doOnError(new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        if (mCountOffError == 0) {
-                            mCountOffError++;
-                            States.MESSAGE.setText(LOADING);
-                            States.MESSAGE.setView(mToast);
-                            mState.setValue(States.MESSAGE);
-                        }
-                    }
-                })
-                .observeOn(Schedulers.io())
-                .doOnNext(new Consumer<ExchangeValutes>() {
-                    @Override
-                    public void accept(ExchangeValutes exchangeValutes) throws Exception {
-                        Thread.sleep(mTimeThread1);
-                    }
-                })
-                //запуск заново при ошибке и показ ЛОАДИНГ
-                .delaySubscription(3, TimeUnit.SECONDS)
-                .retry(1)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<ExchangeValutes>() {
-                               @Override
-                               public void accept(ExchangeValutes valutes) throws Exception {
-                                   Log.d(TAG_MY_LOGS, "--> VIEWMODEL getDataFromDb: valutes=" + valutes);
-                                   States.MESSAGE.setText(GOOD_LOAD);
-                                   States.MESSAGE.setView(mDialog);
-                                   mState.setValue(States.MESSAGE);
-                                   States.NORMAL_VIEW.setData(valutes);
-                                   mState.setValue(States.NORMAL_VIEW);
-                               }
-                           }, new Consumer<Throwable>() {
-                               @Override
-                               public void accept(Throwable throwable) throws Exception {
-                                   States.MESSAGE.setText(ERROR_LOAD);
-                                   States.MESSAGE.setView(mDialog);
-                                   mState.setValue(States.MESSAGE);
-                                   mState.setValue(States.DEFAULT_VIEW);
-                                   if (mCountOffError == 1) {
-                                       mCountOffError = 0;
-                                   }
-                               }
-                           }
-                ));
-    }
-
-    public MutableLiveData<States> getSavedStateData() {
+    public MutableLiveData<States> getState() {
         return mState;
     }
 
@@ -320,6 +282,17 @@ public class ExchangeValutesViewModel extends ViewModel {
     protected void onCleared() {
         super.onCleared();
         mCompositeDisposable.clear();
+    }
+
+
+    private Single<ExchangeValutes> dataFromDb() {
+        return mDataSource
+                .getLastExchangeValutes();
+    }
+
+    private Completable dataInserteDb(ExchangeValutes ex) {
+        return mDataSource
+                .insertExchangeValutes(ex);
     }
 
 }

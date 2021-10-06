@@ -2,7 +2,7 @@ package space.lopatkin.spb.testtask_exchangerate.utils;
 
 import io.reactivex.Single;
 import retrofit2.http.GET;
-import space.lopatkin.spb.testtask_exchangerate.utils.xmlConverter.ValCurs;
+import space.lopatkin.spb.testtask_exchangerate.domain.models.ValCurs;
 
 public interface CbrApi {
 

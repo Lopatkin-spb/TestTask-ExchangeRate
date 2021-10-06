@@ -1,4 +1,4 @@
-package space.lopatkin.spb.testtask_exchangerate.domain.models;
+package space.lopatkin.spb.testtask_exchangerate.utils.xvlConverter;
 
 
 import android.os.Parcelable;
