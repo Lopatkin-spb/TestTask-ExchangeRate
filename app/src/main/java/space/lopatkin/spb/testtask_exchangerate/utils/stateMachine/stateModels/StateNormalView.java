@@ -1,6 +1,6 @@
 package space.lopatkin.spb.testtask_exchangerate.utils.stateMachine.stateModels;
 
-import space.lopatkin.spb.testtask_exchangerate.data.db.ExchangeValutes;
+import space.lopatkin.spb.testtask_exchangerate.domain.models.ExchangeValutes;
 import space.lopatkin.spb.testtask_exchangerate.utils.stateMachine.States;
 
 public class StateNormalView implements States {

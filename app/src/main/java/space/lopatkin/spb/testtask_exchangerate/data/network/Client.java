@@ -1,18 +1,19 @@
-package space.lopatkin.spb.testtask_exchangerate.utils;
+package space.lopatkin.spb.testtask_exchangerate.data.network;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
+import space.lopatkin.spb.testtask_exchangerate.data.local.ExchangeValutesDao;
 
 public class Client {
 
     public static final String SERVER_URL = "https://www.cbr.ru/";
     public static final String SERVER_URL_TEST = "https://www.w3schools.com";
+    //    https://gorest.co.in/public/v1/users/123/todos.xml
     public static final String SERVER_URL_TEST_2 = "https://gorest.co.in";
 
-    //    https://gorest.co.in/public/v1/users/123/todos.xml
     private static HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
 
     private static OkHttpClient okHttpClient;
@@ -38,7 +39,6 @@ public class Client {
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
         }
-//        Log.d(TAG, "--------------client getRetrofit end");
         return retrofit;
     }
 

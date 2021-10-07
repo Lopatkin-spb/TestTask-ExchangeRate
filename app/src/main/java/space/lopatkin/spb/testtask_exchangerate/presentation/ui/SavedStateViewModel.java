@@ -1,4 +1,4 @@
-package space.lopatkin.spb.testtask_exchangerate.utils;
+package space.lopatkin.spb.testtask_exchangerate.presentation.ui;
 
 import android.util.Log;
 import androidx.lifecycle.LiveData;

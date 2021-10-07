@@ -3,8 +3,8 @@ package space.lopatkin.spb.testtask_exchangerate.domain.repository;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
-import space.lopatkin.spb.testtask_exchangerate.data.db.Dates;
-import space.lopatkin.spb.testtask_exchangerate.data.db.ExchangeValutes;
+import space.lopatkin.spb.testtask_exchangerate.data.local.Dates;
+import space.lopatkin.spb.testtask_exchangerate.domain.models.ExchangeValutes;
 
 import java.util.List;
 

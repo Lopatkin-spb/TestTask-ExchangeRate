@@ -1,4 +1,4 @@
-package space.lopatkin.spb.testtask_exchangerate.data.db;
+package space.lopatkin.spb.testtask_exchangerate.domain.models;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;

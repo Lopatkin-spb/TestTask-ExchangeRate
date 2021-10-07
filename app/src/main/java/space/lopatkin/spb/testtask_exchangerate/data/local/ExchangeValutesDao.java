@@ -1,9 +1,10 @@
-package space.lopatkin.spb.testtask_exchangerate.data.db;
+package space.lopatkin.spb.testtask_exchangerate.data.local;
 
 import androidx.room.*;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import space.lopatkin.spb.testtask_exchangerate.domain.models.ExchangeValutes;
 
 import java.util.List;
 

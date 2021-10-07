@@ -15,10 +15,13 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import space.lopatkin.spb.testtask_exchangerate.domain.repository.ExchangeValutesDataSource;
-import space.lopatkin.spb.testtask_exchangerate.data.db.Dates;
-import space.lopatkin.spb.testtask_exchangerate.data.db.ExchangeValutes;
+import space.lopatkin.spb.testtask_exchangerate.data.local.Dates;
+import space.lopatkin.spb.testtask_exchangerate.domain.models.ExchangeValutes;
+import space.lopatkin.spb.testtask_exchangerate.domain.repository.ValCursDataSource;
+import space.lopatkin.spb.testtask_exchangerate.domain.usecase.GetValCursFromApiUseCase;
+import space.lopatkin.spb.testtask_exchangerate.domain.usecase.GetValutesFromDbUseCase;
+import space.lopatkin.spb.testtask_exchangerate.domain.usecase.SaveValutesUseCase;
 import space.lopatkin.spb.testtask_exchangerate.utils.xvlConverter.Valute;
-import space.lopatkin.spb.testtask_exchangerate.utils.Client;
 import space.lopatkin.spb.testtask_exchangerate.utils.stateMachine.States;
 import space.lopatkin.spb.testtask_exchangerate.domain.models.ValCurs;
 
@@ -32,22 +35,9 @@ public class ExchangeValutesViewModel extends ViewModel {
 
     //4) создаем ExchangeValutesViewModel
 
-//    private final ExchangeValutesDataSource mDataSource; //final -было
-//
-//
-//    public ExchangeValutesViewModel(ExchangeValutesDataSource dataSource) {
-//        mDataSource = dataSource;
-//    }
-//
-//    public Completable insertExchangeValutes(ExchangeValutes valutes) {
-//        return mDataSource.insertExchangeValutes(valutes);
-//    }
-//
-//    public Flowable<ExchangeValutes> getLastExchangeValutes() {
-//        return mDataSource.getLastExchangeValutes();
-//    }
 
     private final ExchangeValutesDataSource mDataSource;
+    private final ValCursDataSource mNetworkDataSource;
     private MutableLiveData<States> mState;
     private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
     private List<Valute> mListValutes = new ArrayList();
@@ -57,20 +47,23 @@ public class ExchangeValutesViewModel extends ViewModel {
     private boolean mDialog = false;
 
 
-    public ExchangeValutesViewModel(ExchangeValutesDataSource dataSource) {
+    public ExchangeValutesViewModel(ExchangeValutesDataSource dataSource
+            , ValCursDataSource valCursDataSource) {
         mDataSource = dataSource;
+        mNetworkDataSource = valCursDataSource;
         if (mState == null) {
             mState = new MutableLiveData<>();
         }
         update();
     }
 
+
     public void update() {
+
         States.MESSAGE.setText(UPDATE);
         States.MESSAGE.setView(mToast);
         mState.setValue(States.MESSAGE);
-        mCompositeDisposable.add(Client.getApiService()
-                .getAllValutes()
+        mCompositeDisposable.add(mGetValCursUseCase()
                 .timeout(4, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe(new Consumer<Disposable>() {
@@ -159,7 +152,7 @@ public class ExchangeValutesViewModel extends ViewModel {
     }
 
     private void insertDataToDbMain(ExchangeValutes in) {
-        mCompositeDisposable.add(dataFromDb()
+        mCompositeDisposable.add(mGetValutesUseCase()
                 .delaySubscription(2, TimeUnit.SECONDS)
                 .map(new Function<ExchangeValutes, ExchangeValutes>() {
                     @Override
@@ -176,13 +169,13 @@ public class ExchangeValutesViewModel extends ViewModel {
                 })
                 .ignoreElement()
                 //переключение потока для отредактированных данных
-                .concatWith(dataInserteDb(in))
+                .concatWith(mSaveValutesUseCase(in))
                 .onErrorResumeNext(new Function<Throwable, CompletableSource>() {
                     @Override
                     public CompletableSource apply(@NonNull Throwable throwable) throws Exception {
                         //(если нет записей в бд - ошибка)
                         // при ошибке включение потока заново без редактирования данных
-                        return dataInserteDb(in);
+                        return mSaveValutesUseCase(in);
                     }
                 })
                 .subscribeOn(Schedulers.io())
@@ -218,7 +211,7 @@ public class ExchangeValutesViewModel extends ViewModel {
                 .doOnEvent(new BiConsumer<ExchangeValutes, Throwable>() {
                     @Override
                     public void accept(ExchangeValutes exchangeValutes, Throwable throwable) throws Exception {
-//                        //показ ЛОАДИНГ
+                        //показ ЛОАДИНГ
                         States.MESSAGE.setText(LOADING);
                         States.MESSAGE.setView(mToast);
                         mState.setValue(States.MESSAGE);
@@ -285,14 +278,24 @@ public class ExchangeValutesViewModel extends ViewModel {
     }
 
 
-    private Single<ExchangeValutes> dataFromDb() {
-        return mDataSource
-                .getLastExchangeValutes();
+    private Single<ValCurs> mGetValCursUseCase() {
+        GetValCursFromApiUseCase getValCursFromApiUseCase = new GetValCursFromApiUseCase(mNetworkDataSource);
+        return getValCursFromApiUseCase
+                .execute();
     }
 
-    private Completable dataInserteDb(ExchangeValutes ex) {
-        return mDataSource
-                .insertExchangeValutes(ex);
+
+    private Single<ExchangeValutes> mGetValutesUseCase() {
+        GetValutesFromDbUseCase getValutesFromDbUseCase = new GetValutesFromDbUseCase(mDataSource);
+        return getValutesFromDbUseCase
+                .execute();
+    }
+
+
+    private Completable mSaveValutesUseCase(ExchangeValutes ex) {
+        SaveValutesUseCase saveValutesUseCase = new SaveValutesUseCase(mDataSource);
+        return saveValutesUseCase
+                .execute(ex);
     }
 
 }
